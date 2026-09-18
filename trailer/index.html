@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="bn" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>ClipCart — Apple Keynote Product Launch Trailer</title>
+    <!-- Google Fonts: Inter & Hind Siliguri for authentic, crisp Bengali and Latin typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #050508;
+        color: #f8fafc;
+        font-family: 'Hind Siliguri', 'Inter', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Composition Root */
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 15%, #181c26 0%, #08090d 50%, #030406 100%);
+      }
+
+      /* Apple Cinematic Ambient Lighting */
+      .ambient-glow {
+        position: absolute;
+        width: 900px;
+        height: 900px;
+        border-radius: 50%;
+        filter: blur(140px);
+        pointer-events: none;
+        opacity: 0.25;
+      }
+      .glow-rose {
+        top: -100px;
+        left: 90px;
+        background: radial-gradient(circle, #e11d48 0%, transparent 70%);
+      }
+      .glow-emerald {
+        bottom: 100px;
+        right: -150px;
+        background: radial-gradient(circle, #10b981 0%, transparent 70%);
+      }
+      .glow-blue {
+        top: 40%;
+        left: -200px;
+        background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+      }
+
+      /* Grid Texture */
+      .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+        pointer-events: none;
+        opacity: 0.6;
+      }
+
+      /* Top Keynote HUD Bar */
+      .keynote-hud {
+        position: absolute;
+        top: 60px;
+        left: 60px;
+        right: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+      }
+      .hud-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 24px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(20px);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #e2e8f0;
+      }
+      .hud-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e11d48;
+        box-shadow: 0 0 16px #e11d48;
+      }
+      .hud-time {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 22px;
+        color: #94a3b8;
+        letter-spacing: 0.05em;
+      }
+
+      /* Scene Layout Wrapper: All scenes absolute 1080x1920 */
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 80px;
+        text-align: center;
+      }
+
+      /* Apple-style Glass Cards */
+      .glass-card {
+        background: rgba(18, 22, 32, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 
+          0 30px 80px rgba(0, 0, 0, 0.6),
+          inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(30px);
+        border-radius: 36px;
+      }
+
+      /* Typography Scale */
+      .kicker {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #f43f5e;
+        margin-bottom: 24px;
+      }
+      .headline-hero {
+        font-size: 82px;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+        margin-bottom: 32px;
+      }
+      .headline-sub {
+        font-size: 40px;
+        font-weight: 500;
+        line-height: 1.4;
+        color: #cbd5e1;
+        max-width: 880px;
+      }
+      .highlight-rose {
+        color: #f43f5e;
+      }
+      .highlight-emerald {
+        color: #10b981;
+      }
+      .highlight-amber {
+        color: #fbbf24;
+      }
+
+      /* Logo Mark */
+      .logo-icon-box {
+        width: 150px;
+        height: 150px;
+        border-radius: 38px;
+        background: #e11d48;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 20px 60px rgba(225, 29, 72, 0.45);
+        margin-bottom: 36px;
+      }
+      .logo-triangle {
+        width: 0;
+        height: 0;
+        border-top: 36px solid transparent;
+        border-bottom: 36px solid transparent;
+        border-left: 56px solid #ffffff;
+        margin-left: 12px;
+      }
+
+      /* Feature / Step Rows */
+      .step-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        max-width: 920px;
+        margin-top: 48px;
+      }
+      .step-item {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        padding: 32px 36px;
+        border-radius: 28px;
+        text-align: left;
+      }
+      .step-number {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: rgba(225, 29, 72, 0.18);
+        border: 1px solid rgba(225, 29, 72, 0.35);
+        color: #fb7185;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 32px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        shrink: 0;
+      }
+      .step-number.emerald {
+        background: rgba(16, 185, 129, 0.18);
+        border-color: rgba(16, 185, 129, 0.35);
+        color: #34d399;
+      }
+      .step-title {
+        font-size: 34px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 6px;
+      }
+      .step-desc {
+        font-size: 25px;
+        color: #94a3b8;
+        line-height: 1.35;
+      }
+
+      /* Metric / Stat Big Counters */
+      .stat-cluster {
+        display: flex;
+        gap: 28px;
+        width: 100%;
+        max-width: 920px;
+        margin-top: 48px;
+      }
+      .stat-card {
+        flex: 1;
+        padding: 36px 28px;
+        border-radius: 32px;
+        text-align: center;
+      }
+      .stat-num {
+        font-family: 'Inter', sans-serif;
+        font-size: 64px;
+        font-weight: 900;
+        color: #ffffff;
+        letter-spacing: -0.03em;
+        margin-bottom: 10px;
+      }
+      .stat-label {
+        font-size: 24px;
+        font-weight: 600;
+        color: #94a3b8;
+      }
+
+      /* Phone Frame Mockup */
+      .phone-frame {
+        width: 720px;
+        height: 980px;
+        border-radius: 54px;
+        border: 12px solid #1e293b;
+        box-shadow: 
+          0 0 0 2px rgba(255, 255, 255, 0.1),
+          0 40px 100px rgba(0, 0, 0, 0.85);
+        overflow: hidden;
+        background: #090d16;
+        position: relative;
+        margin-top: 40px;
+      }
+      .phone-notch {
+        width: 220px;
+        height: 32px;
+        background: #1e293b;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        margin: 0 auto;
+      }
+
+      /* Payment Badges (bKash & Nagad) */
+      .payment-row {
+        display: flex;
+        gap: 32px;
+        justify-content: center;
+        width: 100%;
+        max-width: 880px;
+        margin-top: 44px;
+      }
+      .payment-chip {
+        flex: 1;
+        padding: 36px 24px;
+        border-radius: 32px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+      .payment-chip.bkash {
+        border-color: rgba(225, 29, 72, 0.4);
+        background: linear-gradient(180deg, rgba(225, 29, 72, 0.15) 0%, rgba(18, 22, 32, 0.8) 100%);
+      }
+      .payment-chip.nagad {
+        border-color: rgba(249, 115, 22, 0.4);
+        background: linear-gradient(180deg, rgba(249, 115, 22, 0.15) 0%, rgba(18, 22, 32, 0.8) 100%);
+      }
+      .payment-logo-text {
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+      .bkash-text { color: #f43f5e; }
+      .nagad-text { color: #fb923c; }
+
+      /* CTA Bottom Pill */
+      .cta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 54px;
+        border-radius: 9999px;
+        background: #e11d48;
+        color: #ffffff;
+        font-size: 34px;
+        font-weight: 800;
+        box-shadow: 0 16px 50px rgba(225, 29, 72, 0.5);
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="160"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Persistent Background Elements -->
+      <div class="ambient-glow glow-rose"></div>
+      <div class="ambient-glow glow-emerald"></div>
+      <div class="ambient-glow glow-blue"></div>
+      <div class="grid-overlay"></div>
+
+      <!-- Persistent Keynote Top Bar -->
+      <div class="keynote-hud">
+        <div class="hud-badge">
+          <span class="hud-dot"></span>
+          <span>ClipCart Special Event</span>
+        </div>
+        <div class="hud-time">BANGLADESH 2026</div>
+      </div>
+
+      <!-- ==========================================
+           ACT 1: THE PROBLEM (0s – 22s)
+           বিজ্ঞাপন জগতের পুরনো বাস্তবতা ও সংকট
+           ========================================== -->
+      <div
+        id="act1"
+        class="clip scene"
+        data-start="0"
+        data-duration="22"
+        data-track-index="0"
+      >
+        <div id="act1-content" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="kicker">INDUSTRY PARADOX</div>
+          <h1 class="headline-hero">
+            বিজ্ঞাপনের পুরনো ফর্মুলা<br />
+            <span class="highlight-rose">আর কাজ করছে না।</span>
+          </h1>
+          <p class="headline-sub">
+            ব্র্যান্ডগুলো একজন ইনফ্লুয়েন্সারকে এককালীন লাখ টাকা দিচ্ছে,<br />
+            কিন্তু দিনশেষে অর্গানিক রিচ শূন্যের কোঠায়।
+          </p>
+
+          <div class="glass-card" style="width: 880px; padding: 48px; margin-top: 48px; text-align: left;">
+            <div style="font-size: 26px; color: #94a3b8; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace;">
+              TRADITIONAL SPONSORSHIPS
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px;">
+              <span style="font-size: 64px; font-weight: 800; color: #ef4444;">৳১,৫০,০০০+</span>
+              <span style="font-size: 26px; color: #cbd5e1;">স্থির খরচ • ভিউয়ের কোনো গ্যারান্টি নেই</span>
+            </div>
+            <div style="height: 12px; border-radius: 6px; background: #334155; overflow: hidden; margin-bottom: 24px;">
+              <div id="act1-red-bar" style="height: 100%; width: 25%; background: #ef4444; border-radius: 6px;"></div>
+            </div>
+            <p style="font-size: 28px; color: #e2e8f0; line-height: 1.4;">
+              অন্যদিকে দেশে লাখো তরুণ দক্ষ ভিডিও এডিটর ঘরে বসে উপার্জনের নির্ভরযোগ্য কোনো সুযোগ পাচ্ছে না।
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 2: THE REVEAL (22s – 44s)
+           INTRODUCING CLIPCART — দ্য বিগ ব্রেকথ্রু
+           ========================================== -->
+      <div
+        id="act2"
+        class="clip scene"
+        data-start="22"
+        data-duration="22"
+        data-track-index="1"
+      >
+        <div id="act2-content" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="kicker">THE BREAKTHROUGH</div>
+          <div class="logo-icon-box" id="act2-logo">
+            <div class="logo-triangle"></div>
+          </div>
+          <h1 class="headline-hero" style="margin-bottom: 12px;">
+            Clip<span class="highlight-rose">Cart</span>
+          </h1>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 26px; letter-spacing: 0.15em; color: #94a3b8; margin-bottom: 32px;">
+            BANGLADESH CONTENT DISTRIBUTION HOUSE
+          </div>
+          <p class="headline-sub" style="font-size: 42px; font-weight: 700; color: #ffffff;">
+            একটি মূল পডকাস্ট বা বড় ভিডিও。<br />
+            একঝাঁক দক্ষ ক্লিপার。<br />
+            <span class="highlight-emerald">কোটি কোটি ভেরিফাইড অর্গানিক ভিউ।</span>
+          </p>
+
+          <div class="glass-card" style="padding: 32px 48px; border-radius: 30px; margin-top: 48px; display: flex; gap: 40px; align-items: center;">
+            <div style="text-align: center;">
+              <span style="font-size: 48px; font-weight: 900; color: #f43f5e;">১০০%</span>
+              <span style="font-size: 20px; color: #94a3b8; display: block;">পারফরম্যান্স ভিত্তিক</span>
+            </div>
+            <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.1);"></div>
+            <div style="text-align: center;">
+              <span style="font-size: 48px; font-weight: 900; color: #10b981;">৳০</span>
+              <span style="font-size: 20px; color: #94a3b8; display: block;">বট বা ফেক ভিউ</span>
+            </div>
+            <div style="width: 1px; height: 60px; background: rgba(255,255,255,0.1);"></div>
+            <div style="text-align: center;">
+              <span style="font-size: 48px; font-weight: 900; color: #38bdf8;">২৪-৪৮h</span>
+              <span style="font-size: 20px; color: #94a3b8; display: block;">বিকাশ ক্যাশ-আউট</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 3: FOR BRANDS & CREATORS (44s – 76s)
+           ক্যাম্পেইন মেকারদের জন্য নিশ্চিত রিচ
+           ========================================== -->
+      <div
+        id="act3"
+        class="clip scene"
+        data-start="44"
+        data-duration="32"
+        data-track-index="2"
+      >
+        <div id="act3-content" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+          <div class="kicker">FOR BRANDS & CREATORS</div>
+          <h1 class="headline-hero" style="font-size: 74px;">
+            নিশ্চিত অর্গানিক রিচ。<br />
+            <span class="highlight-rose">শুধুমাত্র বাস্তব ভিউয়ে পে করুন।</span>
+          </h1>
+          <p class="headline-sub" style="font-size: 32px;">
+            ইনফ্লুয়েন্সার নেগোসিয়েশনের ঝামেলা শেষ। ClipCart-এ বাজেট জমা দিন এবং আপনার কন্টেন্ট ছড়িয়ে দিন টিকটক, ইনস্টাগ্রাম ও শর্টসে।
+          </p>
+
+          <div class="step-grid">
+            <div class="glass-card step-item">
+              <div class="step-number">০১</div>
+              <div>
+                <div class="step-title">বাজেট ও ড্রাইভ ফুটেজ জমা</div>
+                <div class="step-desc">আপনার ৬০ মিনিটের পডকাস্ট বা ব্র্যান্ড ভিডিওর গুগল ড্রাইভ লিংক এবং ক্যাম্পেইন বাজেট জমা দিন।</div>
+              </div>
+            </div>
+
+            <div class="glass-card step-item">
+              <div class="step-number">০২</div>
+              <div>
+                <div class="step-title">নির্দিষ্ট CPM রেট নির্ধারণ</div>
+                <div class="step-desc">প্রতি ১,০০০ রিয়েল ভিউতে ফিক্সড রেট (যেমন ৳১০০ CPM)। ভিউ না পেলে কোনো বাড়তি খরচ নেই।</div>
+              </div>
+            </div>
+
+            <div class="glass-card step-item">
+              <div class="step-number">০৩</div>
+              <div>
+                <div class="step-title">কঠোর ব্র্যান্ড সেফটি গাইডলাইন</div>
+                <div class="step-desc">নিষিদ্ধ টপিক, হ্যাশট্যাগ ও নির্দেশিকা সেট করুন। প্রতিটি ক্লিপ মডারেটর দ্বারা যাচাই হয়ে অনুমোদিত হবে।</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 4: FOR CLIPPERS & YOUTHS (76s – 110s)
+           তরুণদের ঘরে বসে উপার্জনের বিপ্লব
+           ========================================== -->
+      <div
+        id="act4"
+        class="clip scene"
+        data-start="76"
+        data-duration="34"
+        data-track-index="3"
+      >
+        <div id="act4-content" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+          <div class="kicker">FOR CLIPPERS & EDITORS</div>
+          <h1 class="headline-hero" style="font-size: 74px;">
+            আপনার এডিটিং স্কিল দিয়ে<br />
+            <span class="highlight-emerald">ঘরে বসেই আয় করুন।</span>
+          </h1>
+          <p class="headline-sub" style="font-size: 32px;">
+            বাংলাদেশের সেরা পডকাস্টার, উদ্যোক্তা ও ব্র্যান্ডের ফুল-এইচডি ভিডিও সরাসরি ডাউনলোড করে শর্টস ও রিলস তৈরি করুন।
+          </p>
+
+          <div class="stat-cluster">
+            <div class="glass-card stat-card">
+              <div class="stat-num highlight-emerald" id="act4-views">৫০,০০০</div>
+              <div class="stat-label">অর্জিত ভিউ সংখ্যা</div>
+            </div>
+            <div class="glass-card stat-card">
+              <div class="stat-num highlight-emerald" id="act4-earnings">৳৫,০০০</div>
+              <div class="stat-label">অনুমোদিত আয় (CPM)</div>
+            </div>
+            <div class="glass-card stat-card">
+              <div class="stat-num" style="color: #38bdf8;">৳২০০</div>
+              <div class="stat-label">সর্বনিম্ন ক্যাশ-আউট</div>
+            </div>
+          </div>
+
+          <div class="step-grid" style="margin-top: 28px;">
+            <div class="glass-card step-item">
+              <div class="step-number emerald">✓</div>
+              <div>
+                <div class="step-title">হুক ও অ্যানিমেটেড সাবটাইটেল তৈরি</div>
+                <div class="step-desc">ভিডিওর সবচেয়ে আকর্ষণীয় অংশ কেটে টিকটক, রিলস ও ইউটিউব শর্টসে পোস্ট করুন।</div>
+              </div>
+            </div>
+            <div class="glass-card step-item">
+              <div class="step-number emerald">✓</div>
+              <div>
+                <div class="step-title">ভিউ যত বেশি, আয় তত বেশি</div>
+                <div class="step-desc">স্বচ্ছ হিসাব খাতা। অনুমোদিত ভিউ সরাসরি আপনার লেজার ব্যালেন্সে যোগ হবে।</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 5: THE DUAL VERIFICATION ENGINE (110s – 132s)
+           AI + হিউম্যান অডিট ট্রাস্ট সিস্টেম
+           ========================================== -->
+      <div
+        id="act5"
+        class="clip scene"
+        data-start="110"
+        data-duration="22"
+        data-track-index="4"
+      >
+        <div id="act5-content" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+          <div class="kicker">THE TRUST ENGINE</div>
+          <h1 class="headline-hero" style="font-size: 74px;">
+            বিশ্বাস ও নিরাপত্তার<br />
+            <span class="highlight-rose">ত্রিমুখী যাচাই প্রযুক্তি।</span>
+          </h1>
+          <p class="headline-sub" style="font-size: 32px;">
+            কোনো প্রকার ভুয়া মেট্রিক্স বা বট ভিউয়ের সুযোগ নেই। ClipCart নিশ্চিত করে শতভাগ সততা।
+          </p>
+
+          <div class="step-grid">
+            <div class="glass-card step-item" style="border-left: 6px solid #38bdf8;">
+              <div class="step-number" style="background: rgba(56,189,248,0.18); color: #38bdf8; border-color: rgba(56,189,248,0.4);">
+                AI
+              </div>
+              <div>
+                <div class="step-title">১. অটোমেটেড AI প্রি-ফিল্টার</div>
+                <div class="step-desc">লিংক সাবমিট করার সাথে সাথে AI নকল লিংক এবং নিয়ম লঙ্ঘন ২ সেকেন্ডে শনাক্ত করে।</div>
+              </div>
+            </div>
+
+            <div class="glass-card step-item" style="border-left: 6px solid #f43f5e;">
+              <div class="step-number">HM</div>
+              <div>
+                <div class="step-title">২. শতভাগ মানুষের দ্বারা ভিউ অডিট</div>
+                <div class="step-desc">আমাদের অভিজ্ঞ মডারেটর টিম সরাসরি পোস্ট পরিদর্শন করে অর্গানিক ভিউ গণনা নিশ্চিত করে।</div>
+              </div>
+            </div>
+
+            <div class="glass-card step-item" style="border-left: 6px solid #10b981;">
+              <div class="step-number emerald">DB</div>
+              <div>
+                <div class="step-title">৩. অপরিবর্তনযোগ্য ব্যালেন্স লেজার</div>
+                <div class="step-desc">ডাবল-এন্ট্রি হিসাব ব্যবস্থা। ডাবল-স্পেন্ডিং প্রতিরোধে ফান্ড লক ও অডিট ট্রেইল।</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 6: LOCAL DISBURSEMENTS (132s – 148s)
+           সরাসরি বিকাশ ও নগদে টাকা ক্যাশ-আউট
+           ========================================== -->
+      <div
+        id="act6"
+        class="clip scene"
+        data-start="132"
+        data-duration="16"
+        data-track-index="5"
+      >
+        <div id="act6-content" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+          <div class="kicker">INSTANT LOCAL DISBURSEMENT</div>
+          <h1 class="headline-hero" style="font-size: 74px;">
+            উপার্জিত টাকা নিন<br />
+            <span class="highlight-emerald">সরাসরি বিকাশ ও নগদে।</span>
+          </h1>
+          <p class="headline-sub" style="font-size: 32px;">
+            কোনো জটিল বিদেশি গেটওয়ে বা লুকানো ফি নেই। সর্বনিম্ন ২০০ টাকা হলেই ক্যাশ-আউট রিকোয়েস্ট করুন।
+          </p>
+
+          <div class="payment-row">
+            <div class="glass-card payment-chip bkash">
+              <div class="payment-logo-text bkash-text">bKash</div>
+              <div style="font-size: 28px; font-weight: 700; color: #ffffff;">পার্সোনাল ও মার্চেন্ট</div>
+              <div style="font-size: 22px; color: #cbd5e1;">অফিসিয়াল TrxID সহ সরাসরি পেমেন্ট</div>
+            </div>
+
+            <div class="glass-card payment-chip nagad">
+              <div class="payment-logo-text nagad-text">Nagad</div>
+              <div style="font-size: 28px; font-weight: 700; color: #ffffff;">নগদ ওয়ালেট ট্রান্সফার</div>
+              <div style="font-size: 22px; color: #cbd5e1;">দ্রুত ও নির্ভরযোগ্য ম্যানুয়াল ভেরিফিকেশন</div>
+            </div>
+          </div>
+
+          <!-- SMS Simulation Box -->
+          <div class="glass-card" style="width: 880px; padding: 32px 40px; margin-top: 36px; border-left: 6px solid #10b981; text-align: left;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #10b981; margin-bottom: 8px;">
+              CONFIRMED SMS DISBURSEMENT
+            </div>
+            <div style="font-size: 26px; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;">
+              You have received Tk 3,500.00 from ClipCart. Fee Tk 0.00. Balance Tk 3,500.00. TrxID: 9X82KL91...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           ACT 7: GRAND FINALE & CTA (148s – 160s)
+           ভবিষ্যতের বিজ্ঞাপন বিপ্লব — আজই শুরু করুন
+           ========================================== -->
+      <div
+        id="act7"
+        class="clip scene"
+        data-start="148"
+        data-duration="12"
+        data-track-index="6"
+      >
+        <div id="act7-content" style="display: flex; flex-direction: column; align-items: center;">
+          <div class="logo-icon-box" style="width: 120px; height: 120px; border-radius: 32px; margin-bottom: 24px;">
+            <div class="logo-triangle" style="border-top-width: 28px; border-bottom-width: 28px; border-left-width: 44px;"></div>
+          </div>
+          <h1 class="headline-hero" style="font-size: 88px; margin-bottom: 16px;">
+            Clip<span class="highlight-rose">Cart</span>
+          </h1>
+          <p class="headline-sub" style="font-size: 38px; font-weight: 700; color: #ffffff; margin-bottom: 40px;">
+            কনটেন্ট ও বিজ্ঞাপনের নতুন যুগের সূচনা এখনই।
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 20px; width: 800px;">
+            <div class="glass-card" style="padding: 24px 32px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 28px; font-weight: 700; color: #ffffff;">ব্র্যান্ড ও পডকাস্টারদের জন্য:</span>
+              <span style="font-size: 26px; font-weight: 800; color: #f43f5e;">ক্যাম্পেইন শুরু করুন →</span>
+            </div>
+            <div class="glass-card" style="padding: 24px 32px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 28px; font-weight: 700; color: #ffffff;">ভিডিও এডিটরদের জন্য:</span>
+              <span style="font-size: 26px; font-weight: 800; color: #10b981;">ক্লিপার হিসেবে যোগ দিন →</span>
+            </div>
+          </div>
+
+          <div class="cta-pill">
+            <span>clipcart.com</span>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 20px; color: #64748b; margin-top: 24px; letter-spacing: 0.1em;">
+            DHAKA, BANGLADESH • ZERO AUTOMATED BOTS
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GSAP Master Animation Controller -->
+    <script>
+      const tl = gsap.timeline({ paused: true });
+
+      // Ambient slow lighting breathing
+      gsap.to(".glow-rose", { scale: 1.15, opacity: 0.35, duration: 8, repeat: 20, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".glow-emerald", { scale: 1.2, opacity: 0.3, duration: 10, repeat: 16, yoyo: true, ease: "sine.inOut" });
+
+      // ==========================================
+      // ACT 1 ANIMATION (0s - 22s)
+      // ==========================================
+      tl.fromTo("#act1-content", 
+        { opacity: 0, y: 50, scale: 0.96 }, 
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" }, 
+        0.5
+      );
+      tl.fromTo("#act1-red-bar",
+        { width: "0%" },
+        { width: "75%", duration: 2.5, ease: "power2.out" },
+        2.5
+      );
+      tl.to("#act1-content", 
+        { opacity: 0, y: -40, duration: 0.8, ease: "power2.in" }, 
+        21.2
+      );
+
+      // ==========================================
+      // ACT 2 ANIMATION (22s - 44s)
+      // ==========================================
+      tl.fromTo("#act2-content", 
+        { opacity: 0, scale: 0.9, y: 40 }, 
+        { opacity: 1, scale: 1, y: 0, duration: 1.4, ease: "expo.out" }, 
+        22.5
+      );
+      tl.fromTo("#act2-logo",
+        { rotation: -15, scale: 0.8 },
+        { rotation: 0, scale: 1, duration: 1.2, ease: "back.out(1.7)" },
+        22.7
+      );
+      tl.to("#act2-content", 
+        { opacity: 0, scale: 1.05, duration: 0.8, ease: "power2.in" }, 
+        43.2
+      );
+
+      // ==========================================
+      // ACT 3 ANIMATION (44s - 76s)
+      // ==========================================
+      tl.fromTo("#act3-content", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        44.5
+      );
+      tl.fromTo("#act3 .step-item",
+        { opacity: 0, x: -50 },
+        { opacity: 1, x: 0, duration: 0.8, stagger: 0.5, ease: "power2.out" },
+        46.0
+      );
+      tl.to("#act3-content", 
+        { opacity: 0, y: -40, duration: 0.8, ease: "power2.in" }, 
+        75.2
+      );
+
+      // ==========================================
+      // ACT 4 ANIMATION (76s - 110s)
+      // ==========================================
+      tl.fromTo("#act4-content", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        76.5
+      );
+      tl.fromTo("#act4 .stat-card",
+        { opacity: 0, scale: 0.85, y: 30 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.9, stagger: 0.3, ease: "back.out(1.5)" },
+        78.0
+      );
+      tl.fromTo("#act4 .step-item",
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.4, ease: "power2.out" },
+        82.0
+      );
+      tl.to("#act4-content", 
+        { opacity: 0, y: -40, duration: 0.8, ease: "power2.in" }, 
+        109.2
+      );
+
+      // ==========================================
+      // ACT 5 ANIMATION (110s - 132s)
+      // ==========================================
+      tl.fromTo("#act5-content", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        110.5
+      );
+      tl.fromTo("#act5 .step-item",
+        { opacity: 0, x: 40 },
+        { opacity: 1, x: 0, duration: 0.8, stagger: 0.5, ease: "power2.out" },
+        112.0
+      );
+      tl.to("#act5-content", 
+        { opacity: 0, y: -40, duration: 0.8, ease: "power2.in" }, 
+        131.2
+      );
+
+      // ==========================================
+      // ACT 6 ANIMATION (132s - 148s)
+      // ==========================================
+      tl.fromTo("#act6-content", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        132.5
+      );
+      tl.fromTo(".payment-chip",
+        { opacity: 0, scale: 0.8, y: 30 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.9, stagger: 0.3, ease: "back.out(1.6)" },
+        134.0
+      );
+      tl.to("#act6-content", 
+        { opacity: 0, y: -40, duration: 0.8, ease: "power2.in" }, 
+        147.2
+      );
+
+      // ==========================================
+      // ACT 7 ANIMATION (148s - 160s)
+      // ==========================================
+      tl.fromTo("#act7-content", 
+        { opacity: 0, scale: 0.9, y: 30 }, 
+        { opacity: 1, scale: 1, y: 0, duration: 1.4, ease: "expo.out" }, 
+        148.5
+      );
+      tl.fromTo(".cta-pill",
+        { scale: 0.8, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(2)" },
+        151.0
+      );
+
+      // Register master timeline on window.__timelines
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

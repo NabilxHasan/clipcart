@@ -1,0 +1,316 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --bg: #fafafc;
+    --surface: #ffffff;
+    --surface-2: #f4f4f8;
+    --border: #18181b;
+    --border-subtle: #e4e4e7;
+    --text: #09090b;
+    --muted: #52525b;
+    --brand: #e11d48;
+    --brand-hover: #be123c;
+    --brand-subtle: #ffe4e6;
+    --status-ok: #16a34a;
+    --status-amber: #d97706;
+    --status-red: #dc2626;
+    --status-neutral: #52525b;
+
+    --font-display: 'Unbounded', system-ui, sans-serif;
+    --font-body: 'Space Grotesk', 'Hind Siliguri', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+}
+
+html, body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Space Grotesk', 'Hind Siliguri', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile input zoom prevention for iOS Safari (< 16px causes viewport zoom) */
+@media (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Background Micro-Dot Grid (GP FutureMakers style in Red & White) - distinctly visible */
+.bg-fm-dots {
+  background-color: #fafafc;
+  background-image: radial-gradient(rgba(225, 29, 72, 0.22) 1.5px, transparent 1.6px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-fm-dots {
+  background-color: #0c0d10;
+  background-image: radial-gradient(rgba(244, 63, 94, 0.28) 1.5px, transparent 1.6px);
+  background-size: 20px 20px;
+}
+
+/* Background Cute Cross/Plus Micro-Texture Grid - rich and textured */
+.bg-cute-grid {
+  background-image: 
+    radial-gradient(rgba(225, 29, 72, 0.20) 1.5px, transparent 1.6px),
+    linear-gradient(to right, rgba(24, 24, 27, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.06) 1px, transparent 1px);
+  background-size: 26px 26px, 26px 26px, 26px 26px;
+}
+
+.dark .bg-cute-grid {
+  background-image: 
+    radial-gradient(rgba(244, 63, 94, 0.26) 1.5px, transparent 1.6px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 26px 26px, 26px 26px, 26px 26px;
+}
+
+/* Neo-Brutalist Solid Shadows */
+.neo-box {
+  background: #ffffff;
+  border: 2.5px solid #18181b;
+  border-radius: 18px;
+  box-shadow: 4px 4px 0px #18181b;
+}
+
+.neo-box-lg {
+  background: #ffffff;
+  border: 3px solid #18181b;
+  border-radius: 22px;
+  box-shadow: 6px 6px 0px #18181b;
+}
+
+.neo-box-rose {
+  background: #ffffff;
+  border: 2.5px solid #18181b;
+  border-radius: 18px;
+  box-shadow: 5px 5px 0px #e11d48;
+}
+
+/* Dark Mode Tokens & Overrides */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #0c0d10 !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .neo-box {
+  background-color: #14151a !important;
+  border-color: #27272a !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .neo-box-lg {
+  background-color: #14151a !important;
+  border-color: #27272a !important;
+  box-shadow: 6px 6px 0px #000000 !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .neo-box-rose {
+  background-color: #14151a !important;
+  border-color: #e11d48 !important;
+  box-shadow: 5px 5px 0px rgba(225, 29, 72, 0.4) !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .neo-btn {
+  border-color: #27272a;
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.dark .neo-btn:hover {
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.dark .neo-btn:active {
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.dark .neo-btn-white {
+  background: #1c1d24;
+  color: #f4f4f5;
+  border-color: #27272a;
+}
+
+.dark .neo-btn-white:hover {
+  background: #27272a;
+}
+
+.dark .neo-sticker {
+  border-color: #27272a;
+  box-shadow: 3px 3px 0px #000000;
+}
+
+/* Automatic contrast overrides for dark mode */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #ffffff;
+}
+
+.dark .text-zinc-950:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+  color: #ffffff !important;
+}
+
+.dark .text-zinc-900:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+  color: #f4f4f5 !important;
+}
+
+.dark .text-zinc-800:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+  color: #e4e4e7 !important;
+}
+
+.dark .text-zinc-700:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+  color: #d4d4d8 !important;
+}
+
+.dark .text-zinc-600 {
+  color: #a1a1aa !important;
+}
+
+.dark .text-zinc-500 {
+  color: #a1a1aa !important;
+}
+
+.dark .border-zinc-950 {
+  border-color: #27272a !important;
+}
+
+.dark .border-zinc-950\/10,
+.dark .border-zinc-950\/20 {
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.dark .bg-zinc-50 {
+  background-color: #181920 !important;
+}
+
+.dark .bg-zinc-100 {
+  background-color: #1e1f27 !important;
+}
+
+.dark .bg-rose-50 {
+  background-color: rgba(225, 29, 72, 0.14) !important;
+}
+
+.dark .bg-emerald-50 {
+  background-color: rgba(16, 185, 129, 0.14) !important;
+}
+
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+}
+
+/* Neo-Brutalist Interactive Buttons */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border: 2.5px solid #18181b;
+  border-radius: 12px;
+  transition: transform 0.15s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.2, 1, 0.3, 1);
+  box-shadow: 4px 4px 0px #18181b;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #18181b;
+}
+
+.neo-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0px #18181b;
+}
+
+.neo-btn-primary {
+  background: #e11d48;
+  color: #ffffff;
+  box-shadow: 4px 4px 0px #18181b;
+}
+.neo-btn-primary:hover {
+  background: #f43f5e;
+  box-shadow: 6px 6px 0px #18181b;
+}
+
+.neo-btn-whatsapp {
+  background: #25D366;
+  color: #ffffff;
+  box-shadow: 4px 4px 0px #18181b;
+}
+.neo-btn-whatsapp:hover {
+  background: #22bf5b;
+  box-shadow: 6px 6px 0px #18181b;
+}
+
+.neo-btn-white {
+  background: #ffffff;
+  color: #18181b;
+  box-shadow: 4px 4px 0px #18181b;
+}
+.neo-btn-white:hover {
+  background: #f4f4f5;
+  box-shadow: 6px 6px 0px #18181b;
+}
+
+/* Stickers (Neo-grotesque badges) */
+.neo-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 2px solid #18181b;
+  box-shadow: 3px 3px 0px #18181b;
+}
+
+/* Ticker Marquee Animation */
+@keyframes fmMarquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: fmMarquee 26s linear infinite;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f4f4f8;
+}
+::-webkit-scrollbar-thumb {
+  background: #18181b;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #e11d48;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

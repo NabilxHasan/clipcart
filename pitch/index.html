@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en" data-resolution="widescreen">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>ClipCart — 2-Minute Video Pitch (FutureMaker 2026)</title>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #06070a;
+        color: #f8fafc;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Composition Stage */
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: radial-gradient(circle at 50% 20%, #151926 0%, #090a0f 55%, #040406 100%);
+      }
+
+      /* Ambient Volumetric Spotlights */
+      .ambient-glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(140px);
+        pointer-events: none;
+        opacity: 0.28;
+      }
+      .glow-rose {
+        width: 800px;
+        height: 800px;
+        top: -150px;
+        left: 200px;
+        background: radial-gradient(circle, #e11d48 0%, transparent 70%);
+      }
+      .glow-emerald {
+        width: 750px;
+        height: 750px;
+        bottom: -100px;
+        right: 150px;
+        background: radial-gradient(circle, #10b981 0%, transparent 70%);
+      }
+      .glow-blue {
+        width: 700px;
+        height: 700px;
+        top: 250px;
+        left: 550px;
+        background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+      }
+
+      /* Matrix Grid Texture */
+      .grid-overlay {
+        position: absolute;
+        inset: 0;
+        background-image: 
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 80px 80px;
+        pointer-events: none;
+        opacity: 0.65;
+      }
+
+      /* Top HUD Header */
+      .keynote-hud {
+        position: absolute;
+        top: 36px;
+        left: 60px;
+        right: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+      }
+      .hud-left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .logo-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 20px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(20px);
+      }
+      .play-icon {
+        width: 22px;
+        height: 22px;
+        background: linear-gradient(135deg, #f43f5e, #be123c);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 16px rgba(225, 29, 72, 0.5);
+      }
+      .play-icon svg {
+        width: 12px;
+        height: 12px;
+        fill: #ffffff;
+        margin-left: 2px;
+      }
+      .brand-title {
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+      }
+      .brand-title span {
+        color: #f43f5e;
+      }
+      .hud-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        padding: 4px 10px;
+        border-radius: 6px;
+        background: rgba(244, 63, 94, 0.15);
+        color: #fb7185;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+      }
+      .hud-center {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .act-pill {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        padding: 8px 20px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(16px);
+      }
+      .act-pill span {
+        color: #f43f5e;
+        margin-right: 6px;
+      }
+      .hud-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .track-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 700;
+        color: #38bdf8;
+        background: rgba(56, 189, 248, 0.1);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        padding: 6px 14px;
+        border-radius: 8px;
+        letter-spacing: 0.04em;
+      }
+      .timecode {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.05em;
+      }
+
+      /* Teleprompter / Voiceover Narration Bar at Bottom */
+      .teleprompter-bar {
+        position: absolute;
+        bottom: 34px;
+        left: 80px;
+        right: 80px;
+        z-index: 100;
+        padding: 20px 32px;
+        border-radius: 18px;
+        background: rgba(12, 15, 22, 0.88);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(28px);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        gap: 24px;
+      }
+      .script-kicker {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #f43f5e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        padding-right: 18px;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .script-dot {
+        width: 8px;
+        height: 8px;
+        background: #f43f5e;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #f43f5e;
+      }
+      .script-text {
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: #f1f5f9;
+        letter-spacing: -0.01em;
+        flex: 1;
+      }
+      .script-text .highlight {
+        color: #38bdf8;
+        font-weight: 700;
+      }
+      .script-text .accent {
+        color: #f43f5e;
+        font-weight: 700;
+      }
+      .script-text .success {
+        color: #34d399;
+        font-weight: 700;
+      }
+
+      /* Stage Scenes (Clips) */
+      .clip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 100px 100px 140px;
+      }
+
+      /* Common Shared UI Components */
+      .hero-title {
+        font-size: 64px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        text-align: center;
+        color: #ffffff;
+      }
+      .hero-title span.grad-rose {
+        background: linear-gradient(135deg, #ffffff 20%, #f43f5e 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-title span.grad-cyan {
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-title span.grad-green {
+        background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-subtitle {
+        font-size: 24px;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-top: 18px;
+        text-align: center;
+        max-width: 900px;
+        line-height: 1.45;
+      }
+
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        width: 100%;
+        max-width: 1540px;
+        margin-top: 48px;
+      }
+
+      .pitch-card {
+        background: rgba(18, 22, 34, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 36px 32px;
+        backdrop-filter: blur(20px);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+      .pitch-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      }
+
+      .card-step-num {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 800;
+        color: #f43f5e;
+        letter-spacing: 0.1em;
+        margin-bottom: 14px;
+      }
+      .card-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+      }
+      .card-desc {
+        font-size: 17px;
+        color: #94a3b8;
+        line-height: 1.5;
+      }
+
+      .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-top: 20px;
+        align-self: flex-start;
+      }
+      .badge-rose {
+        background: rgba(244, 63, 94, 0.15);
+        border: 1px solid rgba(244, 63, 94, 0.3);
+        color: #fb7185;
+      }
+      .badge-emerald {
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: #34d399;
+      }
+      .badge-cyan {
+        background: rgba(56, 189, 248, 0.15);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        color: #38bdf8;
+      }
+
+      /* Problem Split */
+      .problem-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        width: 100%;
+        max-width: 1540px;
+        margin-top: 40px;
+      }
+      .problem-card {
+        background: rgba(20, 24, 38, 0.7);
+        border-radius: 28px;
+        padding: 42px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .problem-stat {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 64px;
+        font-weight: 800;
+        color: #f43f5e;
+        letter-spacing: -0.02em;
+        line-height: 1;
+        margin-bottom: 12px;
+      }
+      .problem-stat.cyan {
+        color: #38bdf8;
+      }
+
+      /* Logo Reveal */
+      .logo-giant-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .logo-badge-3d {
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(145deg, #e11d48, #9f1239);
+        border-radius: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 60px rgba(225, 29, 72, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+        margin-bottom: 30px;
+      }
+      .logo-badge-3d svg {
+        width: 64px;
+        height: 64px;
+        fill: #ffffff;
+        margin-left: 8px;
+      }
+
+      /* Earnings counter */
+      .counter-display {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 84px;
+        font-weight: 800;
+        color: #34d399;
+        letter-spacing: -0.02em;
+        margin: 16px 0;
+        text-shadow: 0 0 40px rgba(52, 211, 153, 0.4);
+      }
+
+      /* Payment Cards */
+      .payment-row {
+        display: flex;
+        gap: 36px;
+        margin-top: 36px;
+      }
+      .pay-card {
+        width: 440px;
+        padding: 32px;
+        border-radius: 24px;
+        backdrop-filter: blur(20px);
+        display: flex;
+        flex-direction: column;
+      }
+      .pay-bkash {
+        background: linear-gradient(135deg, rgba(226, 19, 110, 0.2) 0%, rgba(20, 24, 38, 0.8) 100%);
+        border: 1px solid rgba(226, 19, 110, 0.4);
+      }
+      .pay-nagad {
+        background: linear-gradient(135deg, rgba(247, 148, 29, 0.2) 0%, rgba(20, 24, 38, 0.8) 100%);
+        border: 1px solid rgba(247, 148, 29, 0.4);
+      }
+      .trx-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 8px 16px;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 10px;
+        margin-top: 16px;
+        color: #cbd5e1;
+        letter-spacing: 0.05em;
+      }
+
+      /* CTA Buttons */
+      .cta-row {
+        display: flex;
+        gap: 24px;
+        margin-top: 40px;
+      }
+      .cta-btn {
+        padding: 20px 48px;
+        border-radius: 9999px;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        cursor: pointer;
+      }
+      .cta-primary {
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+        color: #ffffff;
+        box-shadow: 0 10px 30px rgba(225, 29, 72, 0.5);
+      }
+      .cta-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Composition Root (1920x1080, exactly 120s duration) -->
+    <div id="root" data-composition-id="main" data-width="1920" data-height="1080" data-duration="120">
+      <!-- Ambient Lights -->
+      <div class="ambient-glow glow-rose"></div>
+      <div class="ambient-glow glow-emerald"></div>
+      <div class="ambient-glow glow-blue"></div>
+      <div class="grid-overlay"></div>
+
+      <!-- Keynote Top HUD -->
+      <div class="keynote-hud">
+        <div class="hud-left">
+          <div class="logo-pill">
+            <div class="play-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+            <div class="brand-title">Clip<span>Cart</span></div>
+          </div>
+          <div class="hud-tag">FUTUREMAKER 2026 PITCH</div>
+        </div>
+
+        <div class="hud-center">
+          <div class="act-pill" id="hud-act-pill">
+            <span id="act-number">ACT 1</span> <span id="act-title" style="color: #cbd5e1;">THE PROBLEM</span>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <div class="track-badge">UPSKILLING & FUTURE OF WORK</div>
+          <div class="timecode" id="hud-timecode">00:00 / 02:00</div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 1: THE PROBLEM (0.0s - 18.0s)                      -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene1" data-start="0" data-duration="18">
+        <div id="scene1-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">THE ADVERTISING & LABOR CRISIS</div>
+          <h1 class="hero-title">
+            Traditional Influencer Marketing Is <span class="grad-rose">Broken</span>.
+          </h1>
+          <p class="hero-subtitle">
+            Brands gamble huge budgets on dying organic reach, while millions of youth remain untapped.
+          </p>
+
+          <div class="problem-split">
+            <div class="problem-card">
+              <div class="problem-stat">-82%</div>
+              <div class="card-title">Organic Reach Collapse</div>
+              <p class="card-desc">
+                Brands pay high upfront retainers for single sponsored posts that social media algorithms bury in hours. Zero performance guarantee.
+              </p>
+              <div class="badge-pill badge-rose">High Upfront Cost • Negative ROI</div>
+            </div>
+
+            <div class="problem-card">
+              <div class="problem-stat cyan">40M+</div>
+              <div class="card-title">Untapped Smartphone Youth</div>
+              <p class="card-desc">
+                Millions of educated youths and students own capable smartphones and free editing tools, yet face over 30% graduate underemployment.
+              </p>
+              <div class="badge-pill badge-cyan">Passive Scrolling • Zero Micro-Earnings</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 2: THE GLOBAL WAVE & THE REVEAL (18.0s - 35.0s)    -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene2" data-start="18" data-duration="17">
+        <div id="scene2-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">GLOBAL PROVEN PLAYBOOK → BANGLADESH</div>
+          <h1 class="hero-title">
+            A Blooming Global Trend, <span class="grad-rose">Now in Bangladesh</span>.
+          </h1>
+          <p class="hero-subtitle">
+            In the US & Europe, decentralized clipping networks generate billions of views. ClipCart introduces this revolution locally.
+          </p>
+
+          <div class="logo-giant-box">
+            <div class="logo-badge-3d" id="scene2-logo">
+              <svg viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </div>
+            <div style="font-size: 72px; font-weight: 900; letter-spacing: -0.03em; line-height: 1;">
+              Clip<span style="color: #f43f5e;">Cart</span>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 18px; color: #38bdf8; letter-spacing: 0.12em; margin-top: 14px;">
+              BANGLADESH'S FIRST PERFORMANCE CLIPPING MARKETPLACE
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 3: HOW IT WORKS FOR BRANDS (35.0s - 52.0s)         -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene3" data-start="35" data-duration="17">
+        <div id="scene3-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">ZERO RISK • STRICT PERFORMANCE</div>
+          <h1 class="hero-title">
+            How It Works <span class="grad-rose">For Brands & Creators</span>
+          </h1>
+          <p class="hero-subtitle">
+            Turn a single 60-minute podcast or talk into dozens of viral short-form assets across TikTok, Reels & Shorts.
+          </p>
+
+          <div class="card-grid">
+            <div class="pitch-card step-card">
+              <div class="card-step-num">STEP 01</div>
+              <div class="card-title">Deposit Budget</div>
+              <p class="card-desc">
+                Pre-fund your campaign pool with verified bank transfer. Zero setup fee or speculative agency retainer.
+              </p>
+              <div class="badge-pill badge-rose">Solvent Escrow Buffer</div>
+            </div>
+
+            <div class="pitch-card step-card">
+              <div class="card-step-num">STEP 02</div>
+              <div class="card-title">Share Raw Footage Link</div>
+              <p class="card-desc">
+                Paste your Google Drive link with master long-form footage, brand safety tags, and campaign targets.
+              </p>
+              <div class="badge-pill badge-cyan">Google Drive Ingestion</div>
+            </div>
+
+            <div class="pitch-card step-card">
+              <div class="card-step-num">STEP 03</div>
+              <div class="card-title">Pay Strictly on CPM</div>
+              <p class="card-desc">
+                Pay solely for authentic, verified organic views (e.g. ৳100 per 1,000 views). No views, no cost.
+              </p>
+              <div class="badge-pill badge-emerald">Guaranteed Viral Reach</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 4: HOW IT WORKS FOR CLIPPERS (52.0s - 70.0s)       -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene4" data-start="52" data-duration="18">
+        <div id="scene4-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">DIGITAL UPSKILLING & EMPLOYABILITY</div>
+          <h1 class="hero-title">
+            Monetize Editing Skills <span class="grad-green">From Home</span>
+          </h1>
+          <p class="hero-subtitle">
+            Cut hooks, add kinetic subtitles, publish to your channels, and watch your earnings tally in real time.
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; max-width: 1540px; margin-top: 36px; align-items: center;">
+            <div class="pitch-card" style="padding: 40px;">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #64748b; letter-spacing: 0.08em;">
+                VERIFIED CLIPPER REVENUE
+              </div>
+              <div class="counter-display" id="earnings-counter">৳0</div>
+              <p class="card-desc">
+                Earn directly based on verified video engagement. Real creative upskilling on live commercial briefs.
+              </p>
+              <div style="display: flex; gap: 14px; margin-top: 20px;">
+                <div class="badge-pill badge-emerald">Low ৳200 Payout Floor</div>
+                <div class="badge-pill badge-cyan">CapCut / Premiere / DaVinci</div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="pitch-card" style="padding: 24px 28px;">
+                <div style="font-weight: 700; font-size: 20px; color: #ffffff;">1. Download Raw 4K Master</div>
+                <p style="color: #94a3b8; font-size: 15px; margin-top: 6px;">Instant access to high-profile podcasts and brand assets.</p>
+              </div>
+              <div class="pitch-card" style="padding: 24px 28px;">
+                <div style="font-weight: 700; font-size: 20px; color: #ffffff;">2. Cut High-Retention Hooks</div>
+                <p style="color: #94a3b8; font-size: 15px; margin-top: 6px;">Master viral storytelling, audio pacing, and captions.</p>
+              </div>
+              <div class="pitch-card" style="padding: 24px 28px;">
+                <div style="font-weight: 700; font-size: 20px; color: #ffffff;">3. Instant Cash-Out via Mobile</div>
+                <p style="color: #94a3b8; font-size: 15px; margin-top: 6px;">Withdraw earnings straight to bKash or Nagad within 24 hours.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 5: THE TECHNOLOGY OF TRUST (70.0s - 88.0s)         -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene5" data-start="70" data-duration="18">
+        <div id="scene5-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">AI SPEED + HUMAN INTEGRITY</div>
+          <h1 class="hero-title">
+            The Technology of <span class="grad-cyan">Trust</span>
+          </h1>
+          <p class="hero-subtitle">
+            Our dual-layer moderation engine protects brand safety and ensures 100% authentic view verification.
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; max-width: 1540px; margin-top: 40px;">
+            <div class="pitch-card">
+              <div class="card-step-num">LAYER 01 • AUTOMATED AI</div>
+              <div class="card-title">AI Pre-Filter & Plagiarism Shield</div>
+              <p class="card-desc">
+                • <b>Multimodal Whisper Speech-to-Text</b>: Audio transcription checks banned words & sensitive themes.<br>
+                • <b>Perceptual Hashing (pHash)</b>: Detects stolen or re-uploaded duplicate clips.<br>
+                • <b>Velocity Heuristics</b>: Flags abnormal bot traffic and artificial view spikes instantly.
+              </p>
+              <div class="badge-pill badge-cyan">2-Second Automated Scan</div>
+            </div>
+
+            <div class="pitch-card">
+              <div class="card-step-num">LAYER 02 • HUMAN & LEDGER</div>
+              <div class="card-title">Human Audit & Double-Entry Ledger</div>
+              <p class="card-desc">
+                • <b>100% Human View Verification</b>: Staff verifies authentic view count before balance credit.<br>
+                • <b>Double-Entry Accounting</b>: Balances computed strictly from immutable ledger entries.<br>
+                • <b>Zero Bot Payouts</b>: Brand budgets are protected by design.
+              </p>
+              <div class="badge-pill badge-emerald">Audited Financial Safety</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 6: HYPER-LOCAL PAYOUTS (88.0s - 105.0s)            -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene6" data-start="88" data-duration="17">
+        <div id="scene6-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">FINANCIAL INCLUSION • 64 DISTRICTS</div>
+          <h1 class="hero-title">
+            Direct Cash-Out via <span class="grad-rose">bKash & Nagad</span>
+          </h1>
+          <p class="hero-subtitle">
+            No international payment barriers or PayPal required. Accessible liquidity for youth nationwide.
+          </p>
+
+          <div class="payment-row">
+            <div class="pay-card pay-bkash">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #f43f5e; font-weight: 700;">
+                MOBILE FINANCIAL SERVICE
+              </div>
+              <div style="font-size: 32px; font-weight: 900; color: #ffffff; margin-top: 8px;">bKash Payout</div>
+              <p style="color: #cbd5e1; font-size: 15px; margin-top: 8px;">Direct wallet disbursement within 24h of review approval.</p>
+              <div class="trx-badge">TrxID: 9X7K21MN • VERIFIED</div>
+            </div>
+
+            <div class="pay-card pay-nagad">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #f97316; font-weight: 700;">
+                MOBILE FINANCIAL SERVICE
+              </div>
+              <div style="font-size: 32px; font-weight: 900; color: #ffffff; margin-top: 8px;">Nagad Payout</div>
+              <p style="color: #cbd5e1; font-size: 15px; margin-top: 8px;">Zero withdrawal fee deduction. ৳200 minimum threshold.</p>
+              <div class="trx-badge">TrxID: 8L4P92BQ • VERIFIED</div>
+            </div>
+
+            <div class="pay-card" style="background: rgba(20, 24, 38, 0.7); border: 1px solid rgba(255, 255, 255, 0.1);">
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #38bdf8; font-weight: 700;">
+                DECENTRALIZED LABOR
+              </div>
+              <div style="font-size: 32px; font-weight: 900; color: #ffffff; margin-top: 8px;">All 64 Districts</div>
+              <p style="color: #cbd5e1; font-size: 15px; margin-top: 8px;">Enabling students, women, and rural youths to earn remotely.</p>
+              <div class="trx-badge">NATIONWIDE REACH • 2026</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- SCENE 7: GRAND FINALE & CTA (105.0s - 120.0s)            -->
+      <!-- ======================================================== -->
+      <div class="clip" id="scene7" data-start="105" data-duration="15">
+        <div id="scene7-inner" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <div class="hud-tag" style="margin-bottom: 16px;">THE FUTURE OF WORK IS HERE</div>
+          <h1 class="hero-title" style="font-size: 72px;">
+            Join the <span class="grad-rose">Clipping Revolution</span>.
+          </h1>
+          <p class="hero-subtitle" style="font-size: 26px;">
+            Empowering Bangladesh's Youth. Amplifying Bangladesh's Brands.
+          </p>
+
+          <div class="cta-row">
+            <div class="cta-btn cta-primary">
+              <span>Start Brand Campaign</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+            <div class="cta-btn cta-secondary">
+              <span>Join as Clipper</span>
+            </div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 40px;">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; color: #ffffff;">
+              clipcart.com
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 15px; color: #64748b; margin-top: 10px; letter-spacing: 0.1em;">
+              DHAKA, BANGLADESH • FUTUREMAKER 2026
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- TELEPROMPTER SUBTITLE / VOICEOVER SCRIPT BAR            -->
+      <!-- ======================================================== -->
+      <div class="teleprompter-bar">
+        <div class="script-kicker">
+          <div class="script-dot"></div>
+          VOICEOVER SCRIPT
+        </div>
+        <div class="script-text" id="script-display">
+          "Traditional influencer marketing in Bangladesh is broken. Brands pay expensive upfront retainers for posts that algorithms bury in hours."
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- NATIVE AUDIO SFX ELEMENTS (FOR RENDER & PLAYBACK)       -->
+      <!-- ======================================================== -->
+      <!-- Act 1 -->
+      <audio id="sfx-act1-impact" src="assets/sfx/sfx_impact.wav" data-start="0.3" data-duration="1.4" data-volume="0.85"></audio>
+      <audio id="sfx-act1-whoosh" src="assets/sfx/sfx_whoosh_soft.wav" data-start="6.0" data-duration="0.45" data-volume="0.6"></audio>
+      <audio id="sfx-act1-pop" src="assets/sfx/sfx_pop.wav" data-start="11.0" data-duration="0.12" data-volume="0.7"></audio>
+      <audio id="sfx-act1-riser" src="assets/sfx/sfx_riser.wav" data-start="15.5" data-duration="2.5" data-volume="0.75"></audio>
+
+      <!-- Act 2 -->
+      <audio id="sfx-act2-whoosh" src="assets/sfx/sfx_whoosh.wav" data-start="18.2" data-duration="0.8" data-volume="0.7"></audio>
+      <audio id="sfx-act2-finale" src="assets/sfx/sfx_finale.wav" data-start="22.5" data-duration="2.2" data-volume="0.9"></audio>
+      <audio id="sfx-act2-pop" src="assets/sfx/sfx_pop.wav" data-start="24.0" data-duration="0.12" data-volume="0.7"></audio>
+
+      <!-- Act 3 -->
+      <audio id="sfx-act3-whoosh" src="assets/sfx/sfx_whoosh.wav" data-start="35.0" data-duration="0.8" data-volume="0.7"></audio>
+      <audio id="sfx-act3-click1" src="assets/sfx/sfx_click.wav" data-start="38.0" data-duration="0.06" data-volume="0.8"></audio>
+      <audio id="sfx-act3-click2" src="assets/sfx/sfx_click.wav" data-start="43.0" data-duration="0.06" data-volume="0.8"></audio>
+      <audio id="sfx-act3-chime" src="assets/sfx/sfx_chime.wav" data-start="47.0" data-duration="1.8" data-volume="0.75"></audio>
+
+      <!-- Act 4 -->
+      <audio id="sfx-act4-whoosh" src="assets/sfx/sfx_whoosh.wav" data-start="52.0" data-duration="0.8" data-volume="0.7"></audio>
+      <audio id="sfx-act4-scan" src="assets/sfx/sfx_scan.wav" data-start="56.0" data-duration="1.0" data-volume="0.65"></audio>
+      <audio id="sfx-act4-chime" src="assets/sfx/sfx_chime.wav" data-start="63.0" data-duration="1.8" data-volume="0.8"></audio>
+
+      <!-- Act 5 -->
+      <audio id="sfx-act5-impact" src="assets/sfx/sfx_impact.wav" data-start="70.0" data-duration="1.4" data-volume="0.8"></audio>
+      <audio id="sfx-act5-scan" src="assets/sfx/sfx_scan.wav" data-start="73.0" data-duration="1.0" data-volume="0.75"></audio>
+      <audio id="sfx-act5-click" src="assets/sfx/sfx_click.wav" data-start="80.0" data-duration="0.06" data-volume="0.8"></audio>
+
+      <!-- Act 6 -->
+      <audio id="sfx-act6-whoosh" src="assets/sfx/sfx_whoosh.wav" data-start="88.0" data-duration="0.8" data-volume="0.7"></audio>
+      <audio id="sfx-act6-chime" src="assets/sfx/sfx_chime.wav" data-start="90.5" data-duration="1.8" data-volume="0.85"></audio>
+      <audio id="sfx-act6-pop" src="assets/sfx/sfx_pop.wav" data-start="94.5" data-duration="0.12" data-volume="0.75"></audio>
+      <audio id="sfx-act6-riser" src="assets/sfx/sfx_riser.wav" data-start="102.5" data-duration="2.5" data-volume="0.8"></audio>
+
+      <!-- Act 7 -->
+      <audio id="sfx-act7-finale" src="assets/sfx/sfx_finale.wav" data-start="105.0" data-duration="2.2" data-volume="0.95"></audio>
+      <audio id="sfx-act7-pop1" src="assets/sfx/sfx_pop.wav" data-start="108.0" data-duration="0.12" data-volume="0.8"></audio>
+      <audio id="sfx-act7-pop2" src="assets/sfx/sfx_pop.wav" data-start="110.0" data-duration="0.12" data-volume="0.8"></audio>
+      <audio id="sfx-act7-chime" src="assets/sfx/sfx_chime.wav" data-start="114.0" data-duration="1.8" data-volume="0.85"></audio>
+    </div>
+
+    <!-- Master GSAP Animation Controller -->
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Ambient slow breathing lighting
+      gsap.to(".glow-rose", { scale: 1.2, opacity: 0.38, duration: 7, repeat: 16, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".glow-emerald", { scale: 1.25, opacity: 0.32, duration: 9, repeat: 13, yoyo: true, ease: "sine.inOut" });
+      gsap.to(".glow-blue", { scale: 1.18, opacity: 0.35, duration: 8, repeat: 14, yoyo: true, ease: "sine.inOut" });
+
+      const scriptDisplay = document.getElementById("script-display");
+      const actNumber = document.getElementById("act-number");
+      const actTitle = document.getElementById("act-title");
+      const timecodeDisplay = document.getElementById("hud-timecode");
+
+      // Script synchronization helper
+      function setScript(actNum, actName, text) {
+        actNumber.textContent = actNum;
+        actTitle.textContent = actName;
+        scriptDisplay.innerHTML = text;
+      }
+
+      // Timecode updater linked to timeline progress
+      tl.eventCallback("onUpdate", () => {
+        const sec = Math.floor(tl.time());
+        const m = String(Math.floor(sec / 60)).padStart(2, '0');
+        const s = String(sec % 60).padStart(2, '0');
+        timecodeDisplay.textContent = `${m}:${s} / 02:00`;
+      });
+
+      // ==========================================
+      // ACT 1: THE PROBLEM (0.0s - 18.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 1", "THE PROBLEM", '"Traditional influencer marketing in Bangladesh is broken. Brands pay expensive upfront retainers for posts that algorithms bury in hours."'), null, 0.0);
+      tl.fromTo("#scene1-inner", 
+        { opacity: 0, y: 40, scale: 0.97 }, 
+        { opacity: 1, y: 0, scale: 1, duration: 1.2, ease: "power3.out" }, 
+        0.3
+      );
+      tl.fromTo(".problem-card",
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 0.9, stagger: 0.3, ease: "power2.out" }, 
+        2.5
+      );
+      tl.call(() => setScript("ACT 1", "THE PROBLEM", '"Meanwhile, millions of talented youth have smartphones and editing skills—trapped in passive scrolling with zero ways to earn."'), null, 8.5);
+      tl.to("#scene1-inner", 
+        { opacity: 0, y: -30, duration: 0.8, ease: "power2.in" }, 
+        17.2
+      );
+
+      // ==========================================
+      // ACT 2: THE REVEAL & GLOBAL WAVE (18.0s - 35.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 2", "THE REVEAL", '"Globally, the creator economy has evolved. Across the US and Europe, a decentralized \'clipping culture\' is blooming—generating billions of views."'), null, 18.0);
+      tl.fromTo("#scene2-inner", 
+        { opacity: 0, scale: 0.92, y: 30 }, 
+        { opacity: 1, scale: 1, y: 0, duration: 1.2, ease: "expo.out" }, 
+        18.3
+      );
+      tl.fromTo("#scene2-logo",
+        { rotation: -20, scale: 0.7, opacity: 0 },
+        { rotation: 0, scale: 1, opacity: 1, duration: 1.2, ease: "back.out(1.8)" },
+        22.5
+      );
+      tl.call(() => setScript("ACT 2", "THE REVEAL", '"Today, we are bringing this revolution to Bangladesh. Meet <span class=\'accent\'>ClipCart</span>—Bangladesh\'s first performance clipping marketplace."'), null, 25.0);
+      tl.to("#scene2-inner", 
+        { opacity: 0, scale: 1.04, duration: 0.8, ease: "power2.in" }, 
+        34.2
+      );
+
+      // ==========================================
+      // ACT 3: FOR BRANDS (35.0s - 52.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 3", "FOR BRANDS", '"For brands, it is simple and risk-free. Deposit your campaign budget. Provide a link to your raw 60-minute podcast via Google Drive."'), null, 35.0);
+      tl.fromTo("#scene3-inner", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        35.3
+      );
+      tl.fromTo(".step-card",
+        { opacity: 0, y: 35, scale: 0.95 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.8, stagger: 0.35, ease: "back.out(1.4)" },
+        36.8
+      );
+      tl.call(() => setScript("ACT 3", "FOR BRANDS", '"Set your brand guidelines, and pay strictly for verified, authentic organic views on TikTok, Reels, and Shorts via <span class=\'highlight\'>CPM</span>."'), null, 43.5);
+      tl.to("#scene3-inner", 
+        { opacity: 0, y: -30, duration: 0.8, ease: "power2.in" }, 
+        51.2
+      );
+
+      // ==========================================
+      // ACT 4: FOR CLIPPERS & YOUTH (52.0s - 70.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 4", "FOR CLIPPERS", '"For youth and video editors, ClipCart turns screen-time into real income. Download master 4K footage and cut viral retention hooks."'), null, 52.0);
+      tl.fromTo("#scene4-inner", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        52.3
+      );
+
+      // Animated Earnings counter
+      const earningsObj = { val: 0 };
+      tl.to(earningsObj, {
+        val: 5420,
+        duration: 8,
+        ease: "power2.out",
+        onUpdate: () => {
+          document.getElementById("earnings-counter").textContent = `৳${Math.floor(earningsObj.val).toLocaleString()}`;
+        }
+      }, 54.0);
+
+      tl.call(() => setScript("ACT 4", "FOR CLIPPERS", '"Add kinetic subtitles, post to your channels, and earn directly. With our <span class=\'success\'>৳200 minimum payout floor</span>, anyone can start today."'), null, 60.5);
+      tl.to("#scene4-inner", 
+        { opacity: 0, y: -30, duration: 0.8, ease: "power2.in" }, 
+        69.2
+      );
+
+      // ==========================================
+      // ACT 5: THE TECHNOLOGY OF TRUST (70.0s - 88.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 5", "TRUST ENGINE", '"Trust is engineered into our core. Our AI pre-filter validates submissions in seconds—detecting duplicate clips, stolen edits, and bot view velocity."'), null, 70.0);
+      tl.fromTo("#scene5-inner", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        70.3
+      );
+      tl.call(() => setScript("ACT 5", "TRUST ENGINE", '"Then, human moderators verify authentic views before crediting our <span class=\'highlight\'>auditable double-entry financial ledger</span>. Zero bot payouts."'), null, 79.0);
+      tl.to("#scene5-inner", 
+        { opacity: 0, y: -30, duration: 0.8, ease: "power2.in" }, 
+        87.2
+      );
+
+      // ==========================================
+      // ACT 6: HYPER-LOCAL PAYOUTS (88.0s - 105.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 6", "LOCAL DISBURSEMENTS", '"No PayPal or foreign bank accounts required. Earnings are disbursed straight to <span class=\'accent\'>bKash</span> and <span class=\'accent\'>Nagad</span> with verified transaction IDs."'), null, 88.0);
+      tl.fromTo("#scene6-inner", 
+        { opacity: 0, y: 40 }, 
+        { opacity: 1, y: 0, duration: 1.2, ease: "power3.out" }, 
+        88.3
+      );
+      tl.fromTo(".pay-card",
+        { opacity: 0, scale: 0.85, y: 30 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.9, stagger: 0.25, ease: "back.out(1.5)" },
+        89.5
+      );
+      tl.call(() => setScript("ACT 6", "FUTURE OF WORK", '"We are democratizing digital creative work and upskilling youth across all <span class=\'success\'>64 districts of Bangladesh</span>."'), null, 96.5);
+      tl.to("#scene6-inner", 
+        { opacity: 0, y: -30, duration: 0.8, ease: "power2.in" }, 
+        104.2
+      );
+
+      // ==========================================
+      // ACT 7: GRAND FINALE & CTA (105.0s - 120.0s)
+      // ==========================================
+      tl.call(() => setScript("ACT 7", "THE FINALE", '"The future of work is performance-driven, decentralized, and accessible to everyone. Empowering youth. Amplifying brands."'), null, 105.0);
+      tl.fromTo("#scene7-inner", 
+        { opacity: 0, scale: 0.9, y: 30 }, 
+        { opacity: 1, scale: 1, y: 0, duration: 1.2, ease: "expo.out" }, 
+        105.3
+      );
+      tl.fromTo(".cta-btn",
+        { scale: 0.85, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.8, stagger: 0.2, ease: "back.out(1.8)" },
+        107.5
+      );
+      tl.call(() => setScript("ACT 7", "THE FINALE", '"Join the clipping revolution today. Visit <span class=\'accent\'>clipcart.com</span>."'), null, 112.5);
+
+      // Register root timeline on window.__timelines
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
