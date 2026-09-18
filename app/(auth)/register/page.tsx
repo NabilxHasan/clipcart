@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ShieldCheck, Lock, PlaySquare, MessageCircle, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Lock, PlaySquare, MessageCircle, CheckCircle2, AlertTriangle, Sparkles, Copy } from 'lucide-react';
 import { PlatformType, PaymentMethod } from '../../../lib/types/database';
 import { mockStore } from '../../../lib/db/mock-store';
 
@@ -31,6 +31,13 @@ export default function RegisterPage() {
   // One-time ৳50 Sign-up Verification Fee
   const [signupPaymentMethod, setSignupPaymentMethod] = useState<'BKASH' | 'NAGAD'>('BKASH');
   const [signupTrxId, setSignupTrxId] = useState('');
+  const [copiedBkash, setCopiedBkash] = useState(false);
+
+  const copyBkashNumber = () => {
+    navigator.clipboard.writeText('+8801882480457');
+    setCopiedBkash(true);
+    setTimeout(() => setCopiedBkash(false), 2000);
+  };
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,8 +59,14 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    if (signupPaymentMethod === 'NAGAD') {
+      setError('Nagad is currently not available. Please send the ৳50 verification fee via bKash to +8801882480457.');
+      setLoading(false);
+      return;
+    }
+
     if (!signupTrxId.trim() || signupTrxId.trim().length < 6) {
-      setError('Please provide a valid ৳50 verification Transaction ID (TrxID) from bKash or Nagad.');
+      setError('Please provide a valid ৳50 verification Transaction ID (TrxID) from bKash (Sent to +8801882480457).');
       setLoading(false);
       return;
     }
@@ -365,19 +378,19 @@ export default function RegisterPage() {
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-950 focus:outline-none text-xs font-['JetBrains_Mono'] font-bold"
                   >
                     <option value="BKASH">bKash (Personal or Merchant)</option>
-                    <option value="NAGAD">Nagad</option>
+                    <option value="NAGAD" disabled>Nagad (Currently Not Available)</option>
                     <option value="BANK">Bangladeshi Bank Account</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-zinc-800 font-bold block font-['Space_Grotesk']">
-                    {paymentMethod === 'BANK' ? 'Bank Name, Branch & Account No.' : 'bKash / Nagad Mobile Number'}
+                    {paymentMethod === 'BANK' ? 'Bank Name, Branch & Account No.' : 'bKash Mobile Number'}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder={paymentMethod === 'BANK' ? 'EBL, Dhanmondi Branch, Acc # 102...' : '017XXXXXXXX'}
+                    placeholder={paymentMethod === 'BANK' ? 'EBL, Dhanmondi Branch, Acc # 102...' : '01XXXXXXXXX'}
                     value={paymentIdentifier}
                     onChange={(e) => setPaymentIdentifier(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-950 placeholder-zinc-400 focus:outline-none focus:bg-white font-['JetBrains_Mono'] text-xs font-medium"
@@ -408,16 +421,40 @@ export default function RegisterPage() {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-lg bg-white border border-zinc-950 text-xs space-y-1 font-['JetBrains_Mono']">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500 font-bold">bKash Send Money:</span>
-                    <span className="font-black text-rose-600">017XXXXXXXX</span>
+                <div className="p-3.5 rounded-xl bg-white border-2 border-zinc-950 text-xs space-y-2.5 font-['JetBrains_Mono']">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-rose-50 border border-rose-200">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0"></span>
+                      <span className="text-zinc-700 font-bold">bKash Send Money:</span>
+                      <span className="font-black text-rose-600 text-sm tracking-wide select-all">+8801882480457</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={copyBkashNumber}
+                      className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-white border border-zinc-950 text-zinc-900 hover:bg-rose-100 flex items-center justify-center gap-1.5 self-start sm:self-auto transition-colors cursor-pointer shadow-[1px_1px_0px_#09090b]"
+                    >
+                      {copiedBkash ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-zinc-600" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
                   </div>
-                  <div className="flex justify-between">
+
+                  <div className="flex justify-between items-center px-1">
                     <span className="text-zinc-500 font-bold">Nagad Send Money:</span>
-                    <span className="font-black text-orange-600">017XXXXXXXX</span>
+                    <span className="font-bold text-amber-700 text-[11px] bg-amber-50 px-2 py-0.5 rounded border border-amber-300">
+                      Currently Not Available
+                    </span>
                   </div>
-                  <div className="flex justify-between text-[11px] text-zinc-500 pt-1 border-t border-zinc-200">
+
+                  <div className="flex justify-between text-[11px] text-zinc-500 pt-1.5 border-t border-zinc-200 px-1">
                     <span>Reference / Counter:</span>
                     <span className="font-bold text-zinc-800">CLIP</span>
                   </div>
@@ -431,14 +468,14 @@ export default function RegisterPage() {
                       onChange={(e) => setSignupPaymentMethod(e.target.value as 'BKASH' | 'NAGAD')}
                       className="w-full px-3 py-2 rounded-xl bg-white border-2 border-zinc-950 text-zinc-950 focus:outline-none text-xs font-['JetBrains_Mono'] font-bold"
                     >
-                      <option value="BKASH">bKash Send Money (৳50)</option>
-                      <option value="NAGAD">Nagad Send Money (৳50)</option>
+                      <option value="BKASH">bKash Send Money (৳50) • +8801882480457</option>
+                      <option value="NAGAD" disabled>Nagad (Currently Not Available)</option>
                     </select>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="text-zinc-800 font-bold block font-['Space_Grotesk']">
-                      Transaction ID (TrxID) <span className="text-rose-600">*</span>
+                      bKash Transaction ID (TrxID) <span className="text-rose-600">*</span>
                     </label>
                     <input
                       type="text"

@@ -44,6 +44,12 @@ export default function ClipperWithdrawalsPage() {
     setError(null);
     setSuccessMsg(null);
 
+    if (paymentMethod === 'NAGAD') {
+      setError('Nagad is currently not available. Please select bKash or Bank Account.');
+      setSubmitting(false);
+      return;
+    }
+
     try {
       await ClipBDRepository.requestWithdrawal({
         userId: currentUserId,
@@ -164,7 +170,7 @@ export default function ClipperWithdrawalsPage() {
                   className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white font-mono font-bold text-xs focus:outline-none shadow-[2px_2px_0px_#09090b]"
                 >
                   <option value="BKASH">bKash</option>
-                  <option value="NAGAD">Nagad</option>
+                  <option value="NAGAD" disabled>Nagad (Currently Not Available)</option>
                   <option value="BANK">Bank Account</option>
                 </select>
               </div>

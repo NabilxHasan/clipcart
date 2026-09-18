@@ -436,7 +436,7 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
               <ul className="space-y-2.5 text-xs font-['Space_Grotesk'] font-medium text-zinc-800 dark:text-zinc-200 pt-1">
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Direct withdrawals to bKash & Nagad (minimum ৳50, 0% fee)</span>
+                  <span>Direct withdrawals to bKash (minimum ৳50, 0% fee • Nagad currently unavailable)</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />

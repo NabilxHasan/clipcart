@@ -140,7 +140,7 @@ export function Footer() {
                 <div className="w-5 h-5 rounded-lg bg-rose-100 dark:bg-rose-950/60 border border-zinc-950 dark:border-rose-800 flex items-center justify-center shrink-0">
                   <Banknote className="w-3.5 h-3.5 text-rose-700 dark:text-rose-400" />
                 </div>
-                <span>৳50 Min Cashout • bKash/Nagad</span>
+                <span>৳50 Min Cashout • bKash</span>
               </li>
               <li className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 font-medium">
                 <div className="w-5 h-5 rounded-lg bg-amber-100 dark:bg-amber-950/60 border border-zinc-950 dark:border-amber-800 flex items-center justify-center shrink-0">

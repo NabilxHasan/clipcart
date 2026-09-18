@@ -194,7 +194,7 @@ export default function ClipperProfilePage() {
                 className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
               >
                 <option value="BKASH">bKash Personal / Merchant</option>
-                <option value="NAGAD">Nagad Wallet</option>
+                <option value="NAGAD" disabled>Nagad (Currently Not Available)</option>
                 <option value="BANK">Bangladeshi Bank Account</option>
               </select>
             </div>
