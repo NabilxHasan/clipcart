@@ -10,9 +10,14 @@ import {
   HelpCircle,
   ExternalLink,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  KeyRound,
+  Trash2,
+  Lock,
+  RefreshCw
 } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
+import { mockStore } from '../../../lib/db/mock-store';
 import { WhatsAppSettings } from '../../../lib/types/database';
 import { WhatsAppPendingBadge } from '../../../components/shared/WhatsAppPendingBadge';
 
@@ -28,6 +33,42 @@ export default function AdminSettingsPage() {
   const [campaignTemplate, setCampaignTemplate] = useState('');
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Security & Data Clean Slate
+  const [currentMasterKey, setCurrentMasterKey] = useState('ClipCart@Admin2026!');
+  const [newMasterKey, setNewMasterKey] = useState('');
+  const [keySaved, setKeySaved] = useState(false);
+  const [wipeConfirm, setWipeConfirm] = useState(false);
+  const [wipeFeedback, setWipeFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedKey = localStorage.getItem('clipcart_master_passcode');
+      if (storedKey) setCurrentMasterKey(storedKey);
+    }
+  }, []);
+
+  const handleUpdateMasterKey = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMasterKey.trim() || newMasterKey.trim().length < 6) {
+      alert('Master Security Key must be at least 6 characters long.');
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('clipcart_master_passcode', newMasterKey.trim());
+      setCurrentMasterKey(newMasterKey.trim());
+      setNewMasterKey('');
+      setKeySaved(true);
+      setTimeout(() => setKeySaved(false), 3000);
+    }
+  };
+
+  const handleClearDemoData = () => {
+    mockStore.clearDemoData();
+    setWipeConfirm(false);
+    setWipeFeedback('All demo/test records have been wiped. Platform is running in 100% clean production mode!');
+    setTimeout(() => setWipeFeedback(null), 5000);
+  };
 
   useEffect(() => {
     async function load() {
@@ -232,6 +273,140 @@ export default function AdminSettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* Master Security Key Management */}
+      <div className="neo-box p-6 sm:p-8 space-y-4">
+        <div className="flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-700 pb-3">
+          <div className="flex items-center gap-2">
+            <Lock className="w-4 h-4 text-rose-600" />
+            <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white uppercase">
+              Admin Master Security Passcode
+            </h2>
+          </div>
+          <span className="neo-sticker bg-zinc-950 text-white dark:bg-rose-600 text-[10px]">
+            Owner Only
+          </span>
+        </div>
+
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+          This Master Passcode locks the <code>/admin</code> operations desk. Anyone attempting to visit this panel without this key will be blocked by the security gate.
+        </p>
+
+        {keySaved && (
+          <div className="neo-box p-3 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-950 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 text-xs font-bold font-mono flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>Master Security Passcode successfully updated! Save this key in a secure place.</span>
+          </div>
+        )}
+
+        <form onSubmit={handleUpdateMasterKey} className="space-y-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Current Active Key</label>
+              <div className="px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white select-all">
+                {currentMasterKey}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Set New Master Passcode</label>
+              <input
+                type="text"
+                placeholder="Enter new master key (min 6 chars)..."
+                value={newMasterKey}
+                onChange={(e) => setNewMasterKey(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono text-xs focus:outline-none focus:shadow-[2px_2px_0px_#e11d48]"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-1">
+            <button
+              type="submit"
+              disabled={!newMasterKey.trim()}
+              className="neo-btn neo-btn-primary px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Update Master Passcode</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Production Database Clean Slate Card */}
+      <div className="neo-box p-6 sm:p-8 space-y-4 border-rose-600">
+        <div className="flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-700 pb-3">
+          <div className="flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-rose-600" />
+            <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white uppercase">
+              Production Database & Clean Slate
+            </h2>
+          </div>
+          <span className="neo-sticker bg-amber-100 text-amber-950 border-amber-950 text-[10px]">
+            Commercial Ops
+          </span>
+        </div>
+
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+          Ensure your platform runs with zero mock hackathon records. Real campaigns you create and real clippers who register will be stored cleanly in production storage.
+        </p>
+
+        {wipeFeedback && (
+          <div className="neo-box p-3 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-950 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 text-xs font-bold font-mono">
+            {wipeFeedback}
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-center font-mono">
+          <div>
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Live Campaigns</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.campaigns.length}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Real Clippers</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.profiles.filter(p => p.role === 'CLIPPER').length}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Clip Proofs</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.submissions.length}</span>
+          </div>
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-xs text-zinc-500 dark:text-zinc-400">
+            Wipes any remaining demo campaigns, fake clippers, or test submissions.
+          </span>
+
+          {!wipeConfirm ? (
+            <button
+              type="button"
+              onClick={() => setWipeConfirm(true)}
+              className="neo-btn bg-zinc-100 dark:bg-zinc-800 hover:bg-rose-100 text-zinc-900 dark:text-white px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-rose-600" />
+              <span>Reset to Clean Production</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleClearDemoData}
+                className="neo-btn bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Confirm Wipe All Demo Data</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setWipeConfirm(false)}
+                className="neo-btn bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white px-3 py-2 text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

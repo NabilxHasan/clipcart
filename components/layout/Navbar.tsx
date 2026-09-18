@@ -85,16 +85,6 @@ export function Navbar() {
               <span className="hidden lg:inline">{t.nav.dashboard}</span>
             </Link>
 
-            {/* Admin Command Icon */}
-            <Link
-              href="/admin"
-              className="p-1.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent hover:border-zinc-950 dark:hover:border-zinc-700 transition-colors"
-              title="Admin Console (Staff Only)"
-              aria-label="Admin Console"
-            >
-              <Shield className="w-4 h-4 text-zinc-700 dark:text-zinc-300" />
-            </Link>
-
             {/* Brand Campaign Button -> WhatsApp Business direct redirect (Never overflows!) */}
             <a
               href={whatsappBrandLaunchUrl}
@@ -199,24 +189,14 @@ export function Navbar() {
               <ArrowRight className="w-4 h-4" />
             </a>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Link
-                href="/dashboard"
-                onClick={() => setIsOpen(false)}
-                className="h-10 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] flex items-center justify-center gap-1.5"
-              >
-                <User className="w-3.5 h-3.5 text-rose-600" />
-                <span>{t.nav.clipperWorkspace}</span>
-              </Link>
-              <Link
-                href="/admin"
-                onClick={() => setIsOpen(false)}
-                className="h-10 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] flex items-center justify-center gap-1.5"
-              >
-                <Shield className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-                <span>{t.nav.admin}</span>
-              </Link>
-            </div>
+            <Link
+              href="/dashboard"
+              onClick={() => setIsOpen(false)}
+              className="w-full h-11 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] flex items-center justify-center gap-2"
+            >
+              <User className="w-4 h-4 text-rose-600" />
+              <span>{t.nav.clipperWorkspace}</span>
+            </Link>
           </div>
         </div>
       )}

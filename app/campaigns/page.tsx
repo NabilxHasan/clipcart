@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Search, Filter, ArrowRight, ExternalLink, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, ArrowRight, ExternalLink, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { Campaign, PlatformType } from '../../lib/types/database';
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { ClipBDRepository } from '../../lib/db/repository';
@@ -105,6 +105,65 @@ export default function CampaignsPage() {
       {loading ? (
         <div className="neo-box p-12 text-center text-sm text-zinc-600 dark:text-zinc-400 font-mono font-bold">
           Loading campaigns from database...
+        </div>
+      ) : campaigns.length === 0 ? (
+        <div className="neo-box-lg p-8 sm:p-12 text-center space-y-6 bg-white dark:bg-[#14151a]">
+          <div className="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-950/60 border-2 border-zinc-950 dark:border-zinc-700 flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto shadow-[3px_3px_0px_#e11d48]">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <div className="space-y-2 max-w-xl mx-auto">
+            <span className="neo-sticker bg-zinc-950 text-white dark:bg-rose-600 text-[10px]">
+              Marketplace Launching
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 dark:text-white tracking-tight">
+              New Campaigns Dropping Soon
+            </h2>
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+              Our Dhaka Operations Desk is actively onboarding top Bangladeshi podcasts, tech founders, and consumer brands. Raw Google Drive footage folders are being prepared for our creator community!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto pt-2 text-left">
+            <div className="neo-box p-5 space-y-3 bg-zinc-50 dark:bg-zinc-800/80 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-['Unbounded'] font-bold text-zinc-950 dark:text-white uppercase block">
+                  For Video Editors & Clippers
+                </span>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+                  Join our official WhatsApp group to get notified the second fresh Google Drive footage drops.
+                </p>
+              </div>
+              <a
+                href="https://chat.whatsapp.com/LUK6WkzD9KZ2fpuZgy0pan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="neo-btn bg-[#25D366] hover:bg-[#20b858] text-white w-full py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Join WhatsApp Community</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+
+            <div className="neo-box p-5 space-y-3 bg-zinc-50 dark:bg-zinc-800/80 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-['Unbounded'] font-bold text-zinc-950 dark:text-white uppercase block">
+                  For Creators & Brands
+                </span>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+                  Ready to turn 60-minute long-form videos into viral vertical clips across TikTok, Reels & Shorts?
+                </p>
+              </div>
+              <a
+                href="https://wa.me/8801337142248?text=Hello%20ClipCart%2C%20I%20want%20to%20launch%20a%20campaign"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="neo-btn neo-btn-primary w-full py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Launch on WhatsApp</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="neo-box p-12 text-center space-y-4">

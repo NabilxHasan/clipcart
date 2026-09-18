@@ -13,9 +13,11 @@ import {
   Settings, 
   FileText, 
   Banknote,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
+import { AdminAuthGate } from '../../components/admin/AdminAuthGate';
 
 const adminNav = [
   { name: 'Dashboard', href: '/admin', icon: Shield },
@@ -32,26 +34,43 @@ const adminNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  const handleLockDesk = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('clipcart_admin_auth');
+      window.location.reload();
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Top Staff Notice & WhatsApp Alert */}
-      <div className="neo-box p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse border border-zinc-950 dark:border-zinc-700" />
-          <span className="font-mono text-zinc-950 dark:text-zinc-100 font-black uppercase tracking-wider">STAFF OPERATIONS DESK</span>
-          <span className="text-zinc-400 dark:text-zinc-600">|</span>
-          <span className="text-zinc-600 dark:text-zinc-400 font-medium">Manual campaign creation, payment & view audit validation mode</span>
+    <AdminAuthGate>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Top Staff Notice & WhatsApp Alert */}
+        <div className="neo-box p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse border border-zinc-950 dark:border-zinc-700" />
+            <span className="font-mono text-zinc-950 dark:text-zinc-100 font-black uppercase tracking-wider">STAFF OPERATIONS DESK</span>
+            <span className="text-zinc-400 dark:text-zinc-600">|</span>
+            <span className="text-zinc-600 dark:text-zinc-400 font-medium">Manual campaign creation, payment & view audit validation mode</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <WhatsAppPendingBadge />
+            <Link
+              href="/dashboard"
+              className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 underline"
+            >
+              Switch to Clipper View
+            </Link>
+            <button
+              type="button"
+              onClick={handleLockDesk}
+              className="px-2.5 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-950 dark:border-zinc-600 font-mono text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              title="Lock and sign out of admin operations desk"
+            >
+              <LogOut className="w-3 h-3 text-rose-600" />
+              <span>Lock Desk</span>
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <WhatsAppPendingBadge />
-          <Link
-            href="/dashboard"
-            className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300 hover:text-rose-600 dark:hover:text-rose-400 underline"
-          >
-            Switch to Clipper View
-          </Link>
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Sidebar */}
@@ -92,5 +111,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </main>
       </div>
     </div>
+    </AdminAuthGate>
   );
 }

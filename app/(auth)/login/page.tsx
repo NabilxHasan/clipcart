@@ -3,26 +3,51 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { PlaySquare, ArrowRight, Shield, User, Check } from 'lucide-react';
+import { PlaySquare, ArrowRight, Lock, Mail, AlertCircle } from 'lucide-react';
+import { mockStore } from '../../../lib/db/mock-store';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('tanvir@creators.bd');
-  const [password, setPassword] = useState('••••••••');
-  const [selectedRole, setSelectedRole] = useState<'CLIPPER' | 'ADMIN' | 'MODERATOR'>('CLIPPER');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedRole === 'CLIPPER') {
+    setLoading(true);
+    setError(null);
+
+    if (!identifier.trim()) {
+      setError('Please enter your registered email or phone number.');
+      setLoading(false);
+      return;
+    }
+
+    // Lookup clipper
+    const user = mockStore.profiles.find(
+      p => (p.email?.toLowerCase() === identifier.trim().toLowerCase() || p.phoneWhatsapp?.includes(identifier.trim())) && p.role === 'CLIPPER'
+    );
+
+    if (user) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('clipcart_active_user', JSON.stringify(user));
+      }
       router.push('/dashboard');
     } else {
-      router.push('/admin');
+      // Set active user session and route to dashboard
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('clipcart_active_user', JSON.stringify({
+          id: `usr-${Date.now().toString(36)}`,
+          email: identifier.includes('@') ? identifier : `${identifier}@clipcart.bd`,
+          fullName: 'ClipCart Creator',
+          role: 'CLIPPER',
+          phoneWhatsapp: identifier,
+          createdAt: new Date().toISOString()
+        }));
+      }
+      router.push('/dashboard');
     }
-  };
-
-  const switchDemo = (role: 'CLIPPER' | 'ADMIN' | 'MODERATOR', demoEmail: string) => {
-    setSelectedRole(role);
-    setEmail(demoEmail);
   };
 
   return (
@@ -31,97 +56,77 @@ export default function LoginPage() {
         <div className="w-12 h-12 rounded-2xl bg-rose-600 border-2 border-zinc-950 flex items-center justify-center text-white mx-auto shadow-[3px_3px_0px_#09090b]">
           <PlaySquare className="w-6 h-6 fill-white" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 tracking-tight">
-          Sign In to ClipCart
-        </h1>
-        <p className="text-xs text-zinc-600 font-medium">
-          Access your clipper earnings ledger or administration queue.
+        <div className="space-y-1">
+          <span className="neo-sticker bg-zinc-950 text-white text-[10px]">
+            Clipper Portal
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 dark:text-white tracking-tight">
+            Sign In to ClipCart
+          </h1>
+        </div>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+          Access your video submissions, CPM metrics, and bKash earnings ledger.
         </p>
       </div>
 
-      {/* Instant Demo Switcher for fast review */}
-      <div className="neo-box p-4 space-y-3 text-xs">
-        <span className="neo-sticker bg-zinc-950 text-white text-[10px]">
-          ⚡ Quick Demo Account Selector
-        </span>
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            onClick={() => switchDemo('CLIPPER', 'tanvir@creators.bd')}
-            className={`p-2.5 rounded-xl border-2 border-zinc-950 text-left flex flex-col justify-between transition-all ${
-              selectedRole === 'CLIPPER'
-                ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#09090b]'
-                : 'bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
-            }`}
-          >
-            <span className="font-['Unbounded'] font-bold text-[11px]">Clipper</span>
-            <span className={`text-[10px] truncate font-mono ${selectedRole === 'CLIPPER' ? 'text-rose-100' : 'text-zinc-500'}`}>Tanvir</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => switchDemo('ADMIN', 'admin@clipcart.com')}
-            className={`p-2.5 rounded-xl border-2 border-zinc-950 text-left flex flex-col justify-between transition-all ${
-              selectedRole === 'ADMIN'
-                ? 'bg-zinc-950 text-white shadow-[2px_2px_0px_#09090b]'
-                : 'bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
-            }`}
-          >
-            <span className="font-['Unbounded'] font-bold text-[11px]">Admin</span>
-            <span className={`text-[10px] truncate font-mono ${selectedRole === 'ADMIN' ? 'text-zinc-300' : 'text-zinc-500'}`}>Operations</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => switchDemo('MODERATOR', 'moderator@clipcart.com')}
-            className={`p-2.5 rounded-xl border-2 border-zinc-950 text-left flex flex-col justify-between transition-all ${
-              selectedRole === 'MODERATOR'
-                ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#09090b]'
-                : 'bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
-            }`}
-          >
-            <span className="font-['Unbounded'] font-bold text-[11px]">Moderator</span>
-            <span className={`text-[10px] truncate font-mono ${selectedRole === 'MODERATOR' ? 'text-rose-100' : 'text-zinc-500'}`}>Audit Desk</span>
-          </button>
+      {error && (
+        <div className="neo-box p-3.5 bg-rose-50 dark:bg-rose-950/40 border-rose-950 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs font-bold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>{error}</span>
         </div>
-      </div>
+      )}
 
-      <form onSubmit={handleLogin} className="neo-box-lg p-6 space-y-4 text-xs">
+      <form onSubmit={handleLogin} className="neo-box-lg p-6 sm:p-7 space-y-4 text-xs">
         <div className="space-y-1.5">
-          <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Email Address</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono text-xs shadow-[2px_2px_0px_#09090b]"
-          />
+          <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">
+            Email or Registered Phone
+          </label>
+          <div className="relative">
+            <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <input
+              type="text"
+              required
+              placeholder="e.g. 01882480457 or editor@gmail.com"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
+            />
+          </div>
         </div>
 
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Password</label>
-            <span className="text-[10px] text-zinc-500 font-mono">Managed via Auth</span>
+            <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">
+              Password / bKash TrxID
+            </label>
+            <span className="text-[10px] text-zinc-500 font-mono">Encrypted</span>
           </div>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-900 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b]"
-          />
+          <div className="relative">
+            <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+            <input
+              type="password"
+              required
+              placeholder="••••••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
+            />
+          </div>
         </div>
 
         <button
           type="submit"
-          className="w-full py-3 rounded-xl font-['Unbounded'] font-bold text-xs uppercase text-white bg-rose-600 hover:bg-rose-700 border-2 border-zinc-950 shadow-[3px_3px_0px_#09090b] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#09090b] transition-all flex items-center justify-center gap-2 mt-2"
+          disabled={loading}
+          className="w-full py-3.5 rounded-xl font-['Unbounded'] font-bold text-xs uppercase text-white bg-rose-600 hover:bg-rose-500 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[4px_4px_0px_#09090b] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer"
         >
-          <span>Sign In as {selectedRole}</span>
+          <span>{loading ? 'Authenticating...' : 'Sign In to Workspace'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
 
-        <div className="pt-2 text-center text-xs text-zinc-600 font-medium">
-          Don&apos;t have an account yet?{' '}
-          <Link href="/register" className="text-rose-600 font-bold hover:underline">
-            Register as a Clipper
+        <div className="pt-3 border-t-2 border-zinc-950/10 dark:border-zinc-800 text-center text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+          New video editor?{' '}
+          <Link href="/register" className="text-rose-600 dark:text-rose-400 font-bold hover:underline">
+            Register as a Clipper (৳50 Anti-Spam Gate) →
           </Link>
         </div>
       </form>

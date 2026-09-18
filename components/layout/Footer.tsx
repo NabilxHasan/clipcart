@@ -149,14 +149,6 @@ export function Footer() {
                 <span>{t.footer.moderationPoint}</span>
               </li>
             </ul>
-            <div className="pt-2">
-              <Link
-                href="/admin"
-                className="text-[11px] font-['JetBrains_Mono'] font-bold text-zinc-500 dark:text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 underline"
-              >
-                {t.footer.staffAccess}
-              </Link>
-            </div>
           </div>
         </div>
 
