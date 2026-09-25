@@ -56,8 +56,10 @@ CREATE POLICY "Clippers can update own profile" ON clipper_profiles
 CREATE POLICY "Admins can manage clipper profiles" ON clipper_profiles
     FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
--- SECURE LEADERBOARD VIEW: Exposes only sanitized public metrics, strictly omitting payment identifiers
-CREATE OR REPLACE VIEW public_clipper_leaderboard AS
+-- SECURE LEADERBOARD VIEW: Runs with security_invoker = true to satisfy Supabase RLS advisor
+CREATE OR REPLACE VIEW public_clipper_leaderboard 
+WITH (security_invoker = true)
+AS
 SELECT 
     p.id as user_id,
     p.full_name,
@@ -73,6 +75,19 @@ JOIN profiles p ON p.id = cp.user_id
 WHERE p.status = 'APPROVED';
 
 GRANT SELECT ON public_clipper_leaderboard TO anon, authenticated;
+
+-- Public can view approved clipper stats through security_invoker view
+CREATE POLICY "Public can view approved clipper stats" ON clipper_profiles
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM profiles 
+            WHERE profiles.id = clipper_profiles.user_id 
+              AND profiles.status = 'APPROVED'
+        )
+    );
+
+-- Column-Level Security: Prevent anon and authenticated roles from querying private payment fields
+REVOKE SELECT (payment_identifier, signup_trx_id) ON clipper_profiles FROM anon, authenticated;
 
 -- 3. CAMPAIGNS POLICIES
 CREATE POLICY "Public can view active campaigns" ON campaigns
