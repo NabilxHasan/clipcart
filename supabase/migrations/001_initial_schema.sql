@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS clipper_profiles (
     portfolio_url TEXT,
     payment_method payment_method_type NOT NULL DEFAULT 'BKASH',
     payment_identifier TEXT, -- Stored securely, strictly masked in public queries
+    signup_trx_id TEXT, -- ৳50 bKash verification TrxID
+    signup_payment_method payment_method_type NOT NULL DEFAULT 'BKASH',
     approved_views_total BIGINT NOT NULL DEFAULT 0,
     approved_earnings_total NUMERIC(12,2) NOT NULL DEFAULT 0.00,
     approved_clips_total INT NOT NULL DEFAULT 0,
