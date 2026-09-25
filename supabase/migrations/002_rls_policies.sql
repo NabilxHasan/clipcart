@@ -18,7 +18,7 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Helpers: Check user role from profiles
-CREATE OR REPLACE FUNCTION auth.get_user_role(user_id UUID)
+CREATE OR REPLACE FUNCTION public.get_user_role(user_id UUID)
 RETURNS user_role AS $$
     SELECT role FROM profiles WHERE id = user_id;
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
@@ -31,7 +31,7 @@ CREATE POLICY "Users can view own profile" ON profiles
     FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view all profiles" ON profiles
-    FOR SELECT USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT'));
+    FOR SELECT USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT'));
 
 CREATE POLICY "Users can update own profile fields" ON profiles
     FOR UPDATE USING (auth.uid() = id)
@@ -42,7 +42,7 @@ CREATE POLICY "Users can update own profile fields" ON profiles
     );
 
 CREATE POLICY "Super admin can update any profile" ON profiles
-    FOR ALL USING (auth.get_user_role(auth.uid()) = 'SUPER_ADMIN');
+    FOR ALL USING (public.get_user_role(auth.uid()) = 'SUPER_ADMIN');
 
 -- 2. CLIPPER PROFILES POLICIES
 -- Clippers can only view their own private profile (including bKash payment details)
@@ -54,7 +54,7 @@ CREATE POLICY "Clippers can update own profile" ON clipper_profiles
     WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Admins can manage clipper profiles" ON clipper_profiles
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 -- SECURE LEADERBOARD VIEW: Exposes only sanitized public metrics, strictly omitting payment identifiers
 CREATE OR REPLACE VIEW public_clipper_leaderboard AS
@@ -79,10 +79,10 @@ CREATE POLICY "Public can view active campaigns" ON campaigns
     FOR SELECT USING (status = 'ACTIVE');
 
 CREATE POLICY "Staff can view all campaigns" ON campaigns
-    FOR SELECT USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT'));
+    FOR SELECT USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR', 'SUPPORT'));
 
 CREATE POLICY "Admins can insert and update campaigns" ON campaigns
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 -- 4. SUBMISSIONS POLICIES
 CREATE POLICY "Clippers can view own submissions" ON submissions
@@ -95,14 +95,14 @@ CREATE POLICY "Clippers can insert submissions to active campaigns" ON submissio
     );
 
 CREATE POLICY "Moderators can view and update all submissions" ON submissions
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
 
 -- 5. SUBMISSION FLAGS & REVIEWS
 CREATE POLICY "Staff can view and manage submission flags" ON submission_flags
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
 
 CREATE POLICY "Staff can manage reviews" ON submission_reviews
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'MODERATOR'));
 
 CREATE POLICY "Clippers can view reviews of own submissions" ON submission_reviews
     FOR SELECT USING (
@@ -114,13 +114,13 @@ CREATE POLICY "Clippers can view own earnings" ON earnings
     FOR SELECT USING (auth.uid() = clipper_id);
 
 CREATE POLICY "Staff can view all earnings" ON earnings
-    FOR SELECT USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR SELECT USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 CREATE POLICY "Clippers can view own wallet transactions" ON wallet_transactions
     FOR SELECT USING (auth.uid() = user_id);
 
 CREATE POLICY "Admins can view all wallet transactions" ON wallet_transactions
-    FOR SELECT USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR SELECT USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 -- 7. WITHDRAWAL REQUESTS
 CREATE POLICY "Clippers can view and create own withdrawal requests" ON withdrawal_requests
@@ -130,21 +130,21 @@ CREATE POLICY "Clippers can create withdrawal request" ON withdrawal_requests
     FOR INSERT WITH CHECK (auth.uid() = user_id AND status = 'REQUESTED');
 
 CREATE POLICY "Admins can manage withdrawal requests" ON withdrawal_requests
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 -- 8. CLIENT REQUESTS (CRM)
 CREATE POLICY "Anyone can submit a client request" ON client_requests
     FOR INSERT WITH CHECK (true);
 
 CREATE POLICY "Staff can view and manage client requests" ON client_requests
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'SUPPORT'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN', 'SUPPORT'));
 
 -- 9. WHATSAPP SETTINGS
 CREATE POLICY "Public can view enabled WhatsApp settings" ON whatsapp_settings
     FOR SELECT USING (true);
 
 CREATE POLICY "Admins can manage WhatsApp settings" ON whatsapp_settings
-    FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR ALL USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
 
 -- 10. NOTIFICATIONS
 CREATE POLICY "Users can view and update own notifications" ON notifications
@@ -152,4 +152,4 @@ CREATE POLICY "Users can view and update own notifications" ON notifications
 
 -- 11. AUDIT LOGS
 CREATE POLICY "Only admins can view audit logs" ON audit_logs
-    FOR SELECT USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+    FOR SELECT USING (public.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
