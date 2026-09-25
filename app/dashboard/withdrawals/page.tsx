@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Banknote, ShieldCheck, Plus, AlertCircle, CheckCircle2, Lock, ArrowDownRight } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
-import { WithdrawalRequest, PaymentMethod } from '../../../lib/types/database';
+import { WithdrawalRequest, PaymentMethod, Profile } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
+import { getActiveUser } from '../../../lib/auth/session';
 
 export default function ClipperWithdrawalsPage() {
   const [financials, setFinancials] = useState<{
@@ -16,17 +18,17 @@ export default function ClipperWithdrawalsPage() {
   const [showModal, setShowModal] = useState(false);
 
   // Form State
-  const [amount, setAmount] = useState<number>(1000);
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+  const [amount, setAmount] = useState<number>(50);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('BKASH');
-  const [paymentIdentifier, setPaymentIdentifier] = useState('01911223344');
+  const [paymentIdentifier, setPaymentIdentifier] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  const currentUserId = 'usr-clipper-01';
-
-  const loadData = async () => {
-    const fin = await ClipBDRepository.getClipperFinancials(currentUserId);
+  const loadData = async (userId: string) => {
+    const fin = await ClipBDRepository.getClipperFinancials(userId);
     setFinancials({
       availableBalance: fin.availableBalance,
       withdrawals: fin.withdrawals,
@@ -35,14 +37,30 @@ export default function ClipperWithdrawalsPage() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    const user = getActiveUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setCurrentUser(user);
+    if (user.phoneWhatsapp) {
+      setPaymentIdentifier(user.phoneWhatsapp);
+    }
+    loadData(user.id);
+  }, [router]);
 
   const handleWithdrawalRequest = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) return;
     setSubmitting(true);
     setError(null);
     setSuccessMsg(null);
+
+    if (currentUser.status === 'PENDING') {
+      setError('Your account is pending ৳50 sign-up verification. Withdrawals unlock once verified.');
+      setSubmitting(false);
+      return;
+    }
 
     if (paymentMethod === 'NAGAD') {
       setError('Nagad is currently not available. Please select bKash or Bank Account.');
@@ -52,7 +70,7 @@ export default function ClipperWithdrawalsPage() {
 
     try {
       await ClipBDRepository.requestWithdrawal({
-        userId: currentUserId,
+        userId: currentUser.id,
         amount: Number(amount),
         paymentMethod,
         paymentIdentifier,
@@ -60,7 +78,7 @@ export default function ClipperWithdrawalsPage() {
 
       setSuccessMsg(`Withdrawal request of ৳${amount} submitted! Funds have been locked in your ledger.`);
       setShowModal(false);
-      await loadData();
+      await loadData(currentUser.id);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Withdrawal failed');
     } finally {

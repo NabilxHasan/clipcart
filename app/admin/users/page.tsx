@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Shield, Check, Ban, Clock, Sparkles } from 'lucide-react';
+import { Users, Shield, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { mockStore } from '../../../lib/db/mock-store';
 import { Profile, UserRole, UserStatus } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
@@ -22,6 +22,8 @@ export default function AdminUsersPage() {
     const p = mockStore.profiles.find(user => user.id === userId);
     if (p) {
       p.role = role;
+      p.updatedAt = new Date().toISOString();
+      mockStore.saveToStorage();
       setFeedback(`Updated role for ${p.fullName} to ${role}`);
       loadData();
     }
@@ -31,9 +33,15 @@ export default function AdminUsersPage() {
     const p = mockStore.profiles.find(user => user.id === userId);
     if (p) {
       p.status = status;
+      p.updatedAt = new Date().toISOString();
+      mockStore.saveToStorage();
       setFeedback(`Updated status for ${p.fullName} to ${status}`);
       loadData();
     }
+  };
+
+  const handleQuickApprove = (userId: string) => {
+    handleStatusChange(userId, 'APPROVED');
   };
 
   return (
@@ -47,14 +55,14 @@ export default function AdminUsersPage() {
             </span>
             <span className="neo-sticker bg-rose-100 text-rose-950 border-rose-950 text-[10px] flex items-center gap-1">
               <Shield className="w-3 h-3 text-rose-600" />
-              PostgreSQL RBAC
+              Staff Verification Desk
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 dark:text-white tracking-tight">
             User & Clipper Directory
           </h1>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-            Server-enforced RBAC. Manage roles (Super Admin, Moderator, Clipper) and account compliance statuses.
+            Verify ৳50 bKash sign-up transactions and manage account compliance statuses.
           </p>
         </div>
       </div>
@@ -74,7 +82,7 @@ export default function AdminUsersPage() {
             </span>
           </div>
           <span className="text-[11px] font-mono font-bold text-zinc-500 dark:text-zinc-400">
-            ৳50 Sign-Up Fee Verified
+            Anti-Bot ৳50 bKash Verification
           </span>
         </div>
 
@@ -83,56 +91,89 @@ export default function AdminUsersPage() {
             <thead className="border-b-2.5 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-mono text-[11px] uppercase font-bold">
               <tr>
                 <th className="py-3 px-4">User & Contact</th>
-                <th className="py-3 px-4">Assigned Role</th>
+                <th className="py-3 px-4">৳50 bKash TrxID</th>
+                <th className="py-3 px-4">Role</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Joined Date</th>
-                <th className="py-3 px-4 text-right">Moderation Action</th>
+                <th className="py-3 px-4 text-right">Verification Action</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-[#14151a]">
-              {profiles.map(p => (
-                <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-bold text-zinc-950 dark:text-white font-['Space_Grotesk'] text-sm">{p.fullName}</div>
-                    <div className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400 font-bold">{p.email}</div>
-                    {p.phoneWhatsapp && (
-                      <div className="font-mono text-[10px] text-zinc-600 dark:text-zinc-300 select-all font-bold">{p.phoneWhatsapp}</div>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <select
-                      value={p.role}
-                      onChange={(e) => handleRoleChange(p.id, e.target.value as UserRole)}
-                      className="px-2.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
-                    >
-                      <option value="CLIPPER">CLIPPER</option>
-                      <option value="CLIENT">CLIENT</option>
-                      <option value="MODERATOR">MODERATOR</option>
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="SUPER_ADMIN">SUPER_ADMIN</option>
-                      <option value="SUPPORT">SUPPORT</option>
-                    </select>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <StatusBadge status={p.status} size="sm" />
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-500 dark:text-zinc-400 font-bold whitespace-nowrap">
-                    {new Date(p.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <select
-                      value={p.status}
-                      onChange={(e) => handleStatusChange(p.id, e.target.value as UserStatus)}
-                      className="px-2.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
-                    >
-                      <option value="APPROVED">APPROVED</option>
-                      <option value="PENDING">PENDING</option>
-                      <option value="SUSPENDED">SUSPENDED</option>
-                      <option value="BANNED">BANNED</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
+              {profiles.map(p => {
+                const clipperData = mockStore.clipperProfiles.find(cp => cp.userId === p.id);
+                const isPending = p.status === 'PENDING';
+
+                return (
+                  <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-zinc-950 dark:text-white font-['Space_Grotesk'] text-sm">{p.fullName}</div>
+                      <div className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400 font-bold">{p.email}</div>
+                      {p.phoneWhatsapp && (
+                        <div className="font-mono text-[10px] text-zinc-600 dark:text-zinc-300 select-all font-bold">{p.phoneWhatsapp}</div>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      {clipperData?.signupTrxId ? (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-950 dark:border-rose-800 font-mono text-[11px] font-bold text-rose-900 dark:text-rose-200">
+                          <span>TrxID:</span>
+                          <span className="font-black text-rose-600 dark:text-rose-400 select-all">{clipperData.signupTrxId}</span>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] font-mono text-zinc-400">—</span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <select
+                        value={p.role}
+                        onChange={(e) => handleRoleChange(p.id, e.target.value as UserRole)}
+                        className="px-2.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
+                      >
+                        <option value="CLIPPER">CLIPPER</option>
+                        <option value="CLIENT">CLIENT</option>
+                        <option value="MODERATOR">MODERATOR</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+                        <option value="SUPPORT">SUPPORT</option>
+                      </select>
+                    </td>
+
+                    <td className="py-3.5 px-4">
+                      <StatusBadge status={p.status} size="sm" />
+                    </td>
+
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-500 dark:text-zinc-400 font-bold whitespace-nowrap">
+                      {new Date(p.createdAt).toLocaleDateString()}
+                    </td>
+
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {isPending && (
+                          <button
+                            type="button"
+                            onClick={() => handleQuickApprove(p.id)}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-['Unbounded'] font-bold text-[10px] uppercase border border-zinc-950 shadow-[2px_2px_0px_#09090b] flex items-center gap-1 cursor-pointer transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Verify ৳50</span>
+                          </button>
+                        )}
+                        <select
+                          value={p.status}
+                          onChange={(e) => handleStatusChange(p.id, e.target.value as UserStatus)}
+                          className="px-2.5 py-1.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
+                        >
+                          <option value="APPROVED">APPROVED</option>
+                          <option value="PENDING">PENDING</option>
+                          <option value="SUSPENDED">SUSPENDED</option>
+                          <option value="BANNED">BANNED</option>
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

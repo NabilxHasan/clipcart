@@ -43,6 +43,8 @@ export interface ClipperProfile {
   portfolioUrl?: string;
   paymentMethod: PaymentMethod;
   paymentIdentifier?: string; // Masked in public views
+  signupTrxId?: string;
+  signupPaymentMethod?: PaymentMethod;
   approvedViewsTotal: number;
   approvedEarningsTotal: number;
   approvedClipsTotal: number;

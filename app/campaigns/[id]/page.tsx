@@ -18,6 +18,7 @@ import {
 import { Campaign, PlatformType } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { ClipBDRepository } from '../../../lib/db/repository';
+import { getActiveUser } from '../../../lib/auth/session';
 
 export default function CampaignDetailPage() {
   const params = useParams();
@@ -60,12 +61,20 @@ export default function CampaignDetailPage() {
     setSubmissionFeedback(null);
 
     try {
-      // Default demo authenticated clipper (Tanvir)
-      const defaultClipperId = 'usr-clipper-01';
+      const activeUser = getActiveUser();
+      if (!activeUser) {
+        setSubmissionFeedback({
+          success: false,
+          message: 'Please sign in or register to submit your video clip.',
+        });
+        setSubmitting(false);
+        router.push('/login');
+        return;
+      }
 
       const result = await ClipBDRepository.createSubmission({
         campaignId: campaign.id,
-        clipperId: defaultClipperId,
+        clipperId: activeUser.id,
         platform,
         postUrl,
         caption,

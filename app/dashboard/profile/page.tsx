@@ -5,9 +5,14 @@ import { User, Lock, Save, CheckCircle2, ShieldCheck, Sparkles, Smartphone } fro
 import { ClipBDRepository } from '../../../lib/db/repository';
 import { ClipperProfile, PaymentMethod, PlatformType } from '../../../lib/types/database';
 
+import { useRouter } from 'next/navigation';
+import { getActiveUser } from '../../../lib/auth/session';
+
 export default function ClipperProfilePage() {
+  const router = useRouter();
   const [profile, setProfile] = useState<ClipperProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeUserId, setActiveUserId] = useState<string>('');
 
   // Form State
   const [tiktokHandle, setTiktokHandle] = useState('');
@@ -21,11 +26,16 @@ export default function ClipperProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const currentUserId = 'usr-clipper-01';
-
   useEffect(() => {
+    const user = getActiveUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    setActiveUserId(user.id);
+
     async function load() {
-      const cp = await ClipBDRepository.getClipperProfile(currentUserId);
+      const cp = await ClipBDRepository.getClipperProfile(user!.id);
       if (cp) {
         setProfile(cp);
         setTiktokHandle(cp.tiktokHandle || '');
@@ -39,15 +49,16 @@ export default function ClipperProfilePage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [router]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!activeUserId) return;
     setSaving(true);
     setSaved(false);
 
     try {
-      await ClipBDRepository.updateClipperProfile(currentUserId, {
+      await ClipBDRepository.updateClipperProfile(activeUserId, {
         tiktokHandle,
         instagramHandle,
         youtubeHandle,

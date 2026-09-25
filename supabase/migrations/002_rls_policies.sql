@@ -35,20 +35,44 @@ CREATE POLICY "Admins can view all profiles" ON profiles
 
 CREATE POLICY "Users can update own profile fields" ON profiles
     FOR UPDATE USING (auth.uid() = id)
-    WITH CHECK (auth.uid() = id AND role = (SELECT role FROM profiles WHERE id = auth.uid()));
+    WITH CHECK (
+        auth.uid() = id 
+        AND role = (SELECT p.role FROM profiles p WHERE p.id = auth.uid())
+        AND status = (SELECT p.status FROM profiles p WHERE p.id = auth.uid())
+    );
 
 CREATE POLICY "Super admin can update any profile" ON profiles
     FOR ALL USING (auth.get_user_role(auth.uid()) = 'SUPER_ADMIN');
 
 -- 2. CLIPPER PROFILES POLICIES
+-- Clippers can only view their own private profile (including bKash payment details)
 CREATE POLICY "Clippers can view own private details" ON clipper_profiles
     FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Public leaderboard view excludes payment identifiers" ON clipper_profiles
-    FOR SELECT USING (true);
+CREATE POLICY "Clippers can update own profile" ON clipper_profiles
+    FOR UPDATE USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Admins can manage clipper profiles" ON clipper_profiles
     FOR ALL USING (auth.get_user_role(auth.uid()) IN ('SUPER_ADMIN', 'ADMIN'));
+
+-- SECURE LEADERBOARD VIEW: Exposes only sanitized public metrics, strictly omitting payment identifiers
+CREATE OR REPLACE VIEW public_clipper_leaderboard AS
+SELECT 
+    p.id as user_id,
+    p.full_name,
+    cp.tiktok_handle,
+    cp.instagram_handle,
+    cp.youtube_handle,
+    cp.preferred_platforms,
+    cp.approved_views_total,
+    cp.approved_earnings_total,
+    cp.approved_clips_total
+FROM clipper_profiles cp
+JOIN profiles p ON p.id = cp.user_id
+WHERE p.status = 'APPROVED';
+
+GRANT SELECT ON public_clipper_leaderboard TO anon, authenticated;
 
 -- 3. CAMPAIGNS POLICIES
 CREATE POLICY "Public can view active campaigns" ON campaigns

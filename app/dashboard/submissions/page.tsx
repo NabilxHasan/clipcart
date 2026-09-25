@@ -8,24 +8,32 @@ import { Submission } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { SafeExternalLink } from '../../../components/shared/SafeExternalLink';
 
+import { useRouter } from 'next/navigation';
+import { getActiveUser } from '../../../lib/auth/session';
+
 export default function ClipperSubmissionsPage() {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
-  const currentUserId = 'usr-clipper-01';
-
   useEffect(() => {
+    const user = getActiveUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     async function load() {
       const data = await ClipBDRepository.getSubmissions({ 
-        clipperId: currentUserId,
+        clipperId: user!.id,
         status: filterStatus 
       });
       setSubmissions(data);
       setLoading(false);
     }
     load();
-  }, [filterStatus]);
+  }, [filterStatus, router]);
   return (
     <div className="space-y-6">
       <div className="neo-box-lg p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">

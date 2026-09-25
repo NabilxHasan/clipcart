@@ -22,8 +22,8 @@ ClipCart operates on a hybrid, high-trust marketplace model designed specificall
 builds/clipbd/
 ├── app/
 │   ├── (auth)/
-│   │   ├── login/               # Interactive role switcher (Clipper / Admin / Moderator)
-│   │   ├── register/            # Clipper onboarding with private payment destination
+│   │   ├── login/               # Secure clipper login portal (authenticated session)
+│   │   ├── register/            # Clipper onboarding with ৳50 bKash anti-bot verification
 │   │   └── join/                # Shortcut to registration
 │   ├── (public)/
 │   │   ├── page.tsx             # Editorial homepage & active campaign showcase

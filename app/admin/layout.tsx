@@ -34,7 +34,12 @@ const adminNav = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const handleLockDesk = () => {
+  const handleLockDesk = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch {
+      // Ignore network errors on logout
+    }
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('clipcart_admin_auth');
       window.location.reload();

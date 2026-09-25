@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Shield, Lock, ArrowRight, AlertCircle, KeyRound, CheckCircle2 } from 'lucide-react';
-
-const DEFAULT_MASTER_PASS = 'ClipCart@Admin2026!';
+import { Shield, Lock, AlertCircle, KeyRound } from 'lucide-react';
 
 export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -15,11 +13,21 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Check if session is already active
-    if (typeof window !== 'undefined') {
-      const activeSession = sessionStorage.getItem('clipcart_admin_auth');
-      setIsAuthenticated(activeSession === 'true');
+    // Verify server-side session cookie
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/admin/check', { method: 'GET', cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          setIsAuthenticated(data.authenticated === true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch {
+        setIsAuthenticated(false);
+      }
     }
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -30,41 +38,47 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  const handleUnlock = (e: React.FormEvent) => {
+  const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cooldown > 0) return;
 
     setLoading(true);
     setError(null);
 
-    // Get configured passcode from localStorage or default
-    const currentPasscode = (typeof window !== 'undefined' && localStorage.getItem('clipcart_master_passcode')) || DEFAULT_MASTER_PASS;
+    try {
+      const res = await fetch('/api/admin/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode: passcode.trim() }),
+      });
 
-    if (passcode.trim() === currentPasscode) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('clipcart_admin_auth', 'true');
-      }
-      setIsAuthenticated(true);
-      setError(null);
-      setAttempts(0);
-    } else {
-      const newAttempts = attempts + 1;
-      setAttempts(newAttempts);
-      if (newAttempts >= 3) {
-        setCooldown(30);
-        setError('Security Lock: 3 failed attempts. Please wait 30 seconds.');
+      if (res.ok) {
+        setIsAuthenticated(true);
+        setError(null);
+        setAttempts(0);
       } else {
-        setError(`Invalid Master Key. ${3 - newAttempts} attempt(s) remaining.`);
+        const data = await res.json().catch(() => null);
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= 3) {
+          setCooldown(30);
+          setError('Security Lock: 3 failed attempts. Please wait 30 seconds.');
+        } else {
+          setError(data?.error || `Invalid Master Key. ${3 - newAttempts} attempt(s) remaining.`);
+        }
       }
+    } catch {
+      setError('Connection failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // While checking initial session
   if (isAuthenticated === null) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center font-mono text-xs text-zinc-500">
-        Verifying security credentials...
+        Verifying security credentials with server...
       </div>
     );
   }
@@ -125,7 +139,7 @@ export function AdminAuthGate({ children }: { children: React.ReactNode }) {
             className="w-full py-3.5 rounded-xl font-['Unbounded'] font-bold text-xs uppercase text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-rose-600 dark:hover:bg-rose-500 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#e11d48] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_#e11d48] active:translate-x-[1px] active:translate-y-[1px] transition-all flex items-center justify-center gap-2 mt-2 cursor-pointer disabled:opacity-50"
           >
             <Lock className="w-4 h-4" />
-            <span>{cooldown > 0 ? `Locked (${cooldown}s)` : 'Unlock Operations Desk'}</span>
+            <span>{loading ? 'Verifying...' : cooldown > 0 ? `Locked (${cooldown}s)` : 'Unlock Operations Desk'}</span>
           </button>
 
           <div className="pt-3 border-t-2 border-zinc-950/10 dark:border-zinc-800 text-center text-xs text-zinc-600 dark:text-zinc-400">

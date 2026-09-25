@@ -6,7 +6,11 @@ import { Banknote, CheckCircle2, TrendingUp, ExternalLink } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
 import { WalletTransaction } from '../../../lib/types/database';
 
+import { useRouter } from 'next/navigation';
+import { getActiveUser } from '../../../lib/auth/session';
+
 export default function ClipperEarningsPage() {
+  const router = useRouter();
   const [financials, setFinancials] = useState<{
     availableBalance: number;
     totalApprovedEarnings: number;
@@ -14,11 +18,16 @@ export default function ClipperEarningsPage() {
   } | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const currentUserId = 'usr-clipper-01';
 
   useEffect(() => {
+    const user = getActiveUser();
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     async function load() {
-      const data = await ClipBDRepository.getClipperFinancials(currentUserId);
+      const data = await ClipBDRepository.getClipperFinancials(user!.id);
       setFinancials({
         availableBalance: data.availableBalance,
         totalApprovedEarnings: data.totalApprovedEarnings,
@@ -27,7 +36,7 @@ export default function ClipperEarningsPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [router]);
 
   if (loading || !financials) {
     return <div className="neo-box p-12 text-center text-xs font-mono font-bold text-zinc-500 dark:text-zinc-400">Loading ledger records...</div>;

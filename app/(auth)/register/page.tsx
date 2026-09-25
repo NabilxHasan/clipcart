@@ -74,20 +74,21 @@ export default function RegisterPage() {
     try {
       const newUserId = `usr-${Date.now().toString(36)}`;
 
-      // 1. Create Profile
-      mockStore.profiles.push({
+      // 1. Create Profile with PENDING status until ৳50 fee is verified
+      const newProfile = {
         id: newUserId,
         email,
-        role: 'CLIPPER',
+        role: 'CLIPPER' as const,
         fullName,
         phoneWhatsapp,
         country,
-        status: 'APPROVED',
+        status: 'PENDING' as const,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      });
+      };
+      mockStore.profiles.push(newProfile);
 
-      // 2. Create Clipper Profile
+      // 2. Create Clipper Profile with verification TrxID
       mockStore.clipperProfiles.push({
         userId: newUserId,
         tiktokHandle: tiktokHandle || undefined,
@@ -98,12 +99,19 @@ export default function RegisterPage() {
         portfolioUrl: portfolioUrl || undefined,
         paymentMethod,
         paymentIdentifier,
+        signupTrxId: signupTrxId.trim(),
+        signupPaymentMethod,
         approvedViewsTotal: 0,
         approvedEarningsTotal: 0,
         approvedClipsTotal: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
+
+      mockStore.saveToStorage();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('clipcart_active_user', JSON.stringify(newProfile));
+      }
 
       // Show Mandatory WhatsApp Community Gate instead of direct router.push
       setRegisteredUserId(newUserId);
