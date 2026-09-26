@@ -647,10 +647,11 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
               href={whatsappGeneralLaunchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-black text-xs text-zinc-950 bg-white hover:bg-zinc-100 border-2 border-zinc-950 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] flex items-center justify-center gap-2 text-center transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]"
+              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-black text-xs text-zinc-950 text-on-light bg-white hover:bg-zinc-100 border-2 border-zinc-950 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] flex items-center justify-center gap-2 text-center transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]"
+              style={{ backgroundColor: '#ffffff', color: '#09090b' }}
             >
-              <MessageCircle className="w-4 h-4 text-emerald-600" />
-              <span>{t.cta.launchBrand}</span>
+              <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="text-on-light font-black" style={{ color: '#09090b' }}>{t.cta.launchBrand}</span>
             </a>
             <Link
               href="/register"

@@ -103,12 +103,24 @@ export function CuteDoodleBackground() {
       </div>
 
       {/* 8. Bottom-Right: Cute "100% VIRAL" Speech Bubble Stamp */}
-      <div className="absolute bottom-14 right-4 sm:right-12 opacity-85 dark:opacity-65 transform -rotate-6 hidden sm:block">
-        <svg width="120" height="75" viewBox="0 0 120 75" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-zinc-900 dark:text-white">
+      <div className="absolute bottom-14 right-4 sm:right-12 opacity-85 dark:opacity-65 transform -rotate-6 hidden sm:block pointer-events-none select-none">
+        <svg width="150" height="80" viewBox="0 0 150 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-zinc-900 dark:text-white">
           {/* Speech bubble */}
-          <rect x="8" y="8" width="100" height="46" rx="14" fill="#ffe4e6" className="dark:fill-rose-950/80" stroke="currentColor" strokeWidth="2.5" />
-          <polygon points="34,54 46,54 28,68" fill="#ffe4e6" className="dark:fill-rose-950/80" stroke="currentColor" strokeWidth="2.5" />
-          <text x="18" y="36" fontFamily="Unbounded, sans-serif" fontSize="11" fontWeight="900" fill="#e11d48">
+          <rect x="6" y="6" width="138" height="48" rx="14" fill="#ffe4e6" className="dark:fill-rose-950/80" stroke="currentColor" strokeWidth="2.5" />
+          <polygon points="36,54 52,54 26,72" fill="#ffe4e6" className="dark:fill-rose-950/80" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
+          {/* Cover inner seam between bubble and tail */}
+          <path d="M37 54 L51 54" stroke="#ffe4e6" className="dark:stroke-rose-950" strokeWidth="3" />
+          <text 
+            x="75" 
+            y="30" 
+            textAnchor="middle" 
+            dominantBaseline="central" 
+            fontFamily="Unbounded, sans-serif" 
+            fontSize="10" 
+            fontWeight="900" 
+            fill="#e11d48"
+            letterSpacing="0.02em"
+          >
             ★ 100% VIRAL!
           </text>
         </svg>

@@ -158,20 +158,29 @@ html, body {
   color: #ffffff;
 }
 
-.dark .text-zinc-950:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+.dark .text-zinc-950:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]):not([class*="bg-white"]):not(.text-on-light) {
   color: #ffffff !important;
 }
 
-.dark .text-zinc-900:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+.dark .text-zinc-900:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]):not([class*="bg-white"]):not(.text-on-light) {
   color: #f4f4f5 !important;
 }
 
-.dark .text-zinc-800:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+.dark .text-zinc-800:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]):not([class*="bg-white"]):not(.text-on-light) {
   color: #e4e4e7 !important;
 }
 
-.dark .text-zinc-700:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]) {
+.dark .text-zinc-700:not([class*="bg-amber"]):not([class*="bg-yellow"]):not([class*="bg-emerald-300"]):not([class*="bg-rose-500"]):not([class*="bg-white"]):not(.text-on-light) {
   color: #d4d4d8 !important;
+}
+
+/* Force dark text for buttons/badges with white backgrounds in dark mode */
+.dark .text-on-light,
+.dark .bg-white .text-on-light,
+.dark .bg-white .text-zinc-950,
+.dark a.bg-white span,
+.dark button.bg-white span {
+  color: #09090b !important;
 }
 
 .dark .text-zinc-600 {
