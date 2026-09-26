@@ -7,18 +7,55 @@ import { ArrowRight, Lock, PlaySquare, MessageCircle, CheckCircle2, AlertTriangl
 import { PlatformType, PaymentMethod, Profile, ClipperProfile } from '../../../lib/types/database';
 import { mockStore } from '../../../lib/db/mock-store';
 import { useLanguage } from '../../../lib/i18n/context';
+import { validateEmail } from '../../../lib/validation/email';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // Basic Details
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const [emailWarning, setEmailWarning] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneWhatsapp, setPhoneWhatsapp] = useState('');
   const [country, setCountry] = useState('Bangladesh');
+
+  const handleEmailChange = (val: string) => {
+    setEmail(val);
+    const trimmed = val.trim();
+    if (!trimmed || !trimmed.includes('@')) {
+      setEmailSuggestion(null);
+      setEmailWarning(null);
+      return;
+    }
+    const check = validateEmail(trimmed);
+    if (!check.isValid) {
+      if (check.suggestion) {
+        setEmailSuggestion(check.suggestion);
+        setEmailWarning((lang === 'bn' ? check.errorBn : check.error) || check.error || null);
+      } else if (trimmed.includes('.') && trimmed.split('@')[1]?.includes('.')) {
+        setEmailSuggestion(null);
+        setEmailWarning((lang === 'bn' ? check.errorBn : check.error) || check.error || null);
+      } else {
+        setEmailSuggestion(null);
+        setEmailWarning(null);
+      }
+    } else {
+      setEmailSuggestion(null);
+      setEmailWarning(null);
+    }
+  };
+
+  const applyEmailSuggestion = () => {
+    if (emailSuggestion) {
+      setEmail(emailSuggestion);
+      setEmailSuggestion(null);
+      setEmailWarning(null);
+    }
+  };
 
   // Socials & Portfolio
   const [tiktokHandle, setTiktokHandle] = useState('');
@@ -64,6 +101,13 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    const emailResult = validateEmail(email);
+    if (!emailResult.isValid) {
+      setError((lang === 'bn' ? emailResult.errorBn : emailResult.error) || emailResult.error || 'Invalid email address');
+      setLoading(false);
+      return;
+    }
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters long.');
       setLoading(false);
@@ -93,11 +137,11 @@ export default function RegisterPage() {
     }
 
     try {
-      const newUserId = `usr-${Date.now().toString(36)}`;
+      let assignedUserId = `usr-${Date.now().toString(36)}`;
 
       // 1. Create Profile with PENDING status until ৳50 fee is verified
       const newProfile: Profile = {
-        id: newUserId,
+        id: assignedUserId,
         email: email.trim().toLowerCase(),
         role: 'CLIPPER' as const,
         fullName: fullName.trim(),
@@ -111,7 +155,7 @@ export default function RegisterPage() {
 
       // 2. Create Clipper Profile with verification TrxID & social handles
       const newClipperProfile: ClipperProfile = {
-        userId: newUserId,
+        userId: assignedUserId,
         tiktokHandle: tiktokHandle.trim() || undefined,
         instagramHandle: instagramHandle.trim() || undefined,
         youtubeHandle: youtubeHandle.trim() || undefined,
@@ -142,10 +186,16 @@ export default function RegisterPage() {
         });
 
         const data = await res.json();
-        if (!res.ok) {
+        if (!res.ok || !data.success) {
           setError(data.error || 'Registration failed');
           setLoading(false);
           return;
+        }
+
+        if (data.user?.id) {
+          assignedUserId = data.user.id;
+          newProfile.id = assignedUserId;
+          newClipperProfile.userId = assignedUserId;
         }
       } catch (apiErr) {
         console.warn('API sync notice:', apiErr);
@@ -161,7 +211,7 @@ export default function RegisterPage() {
         mockStore.profiles.push(newProfile);
       }
 
-      const existingCpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === newUserId);
+      const existingCpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === assignedUserId);
       if (existingCpIdx >= 0) {
         mockStore.clipperProfiles[existingCpIdx] = newClipperProfile;
       } else {
@@ -174,7 +224,7 @@ export default function RegisterPage() {
       }
 
       // Show Mandatory WhatsApp Community Gate instead of direct router.push
-      setRegisteredUserId(newUserId);
+      setRegisteredUserId(assignedUserId);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -310,17 +360,46 @@ export default function RegisterPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
-                    {t.registerPage.emailLabel}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk'] text-xs">
+                      {t.registerPage.emailLabel}
+                    </label>
+                    <span className="text-[10px] font-mono text-zinc-500 font-medium">
+                      {lang === 'bn' ? 'আসল ইমেইল আবশ্যক' : 'Authentic email required'}
+                    </span>
+                  </div>
                   <input
                     type="email"
                     required
                     placeholder={t.registerPage.emailPlaceholder}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:bg-white dark:focus:bg-zinc-800 text-xs font-medium"
                   />
+                  {emailSuggestion && (
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-500 text-amber-950 dark:text-amber-200 text-[11px] font-medium shadow-[2px_2px_0px_#f59e0b] dark:shadow-[2px_2px_0px_#78350f] animate-in fade-in">
+                      <div className="flex items-center gap-1.5 pr-2">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span>
+                          {lang === 'bn' ? 'আপনি কি বোঝাতে চেয়েছেন: ' : 'Did you mean: '}
+                          <strong className="font-mono text-rose-600 dark:text-rose-400 font-bold">{emailSuggestion}</strong>?
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={applyEmailSuggestion}
+                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] uppercase tracking-wider shrink-0 transition-all shadow-[1px_1px_0px_#09090b]"
+                      >
+                        {lang === 'bn' ? 'ঠিক করুন' : 'Fix typo'}
+                      </button>
+                    </div>
+                  )}
+                  {!emailSuggestion && emailWarning && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 shrink-0" />
+                      <span>{emailWarning}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">

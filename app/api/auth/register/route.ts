@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { Profile, ClipperProfile } from '@/lib/types/database';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
+import { validateEmail } from '@/lib/validation/email';
 
 export async function POST(req: Request) {
   try {
@@ -40,9 +41,14 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!email || !email.includes('@') || email.length < 5) {
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.isValid) {
       return NextResponse.json(
-        { success: false, error: 'A valid email address is required.' },
+        { 
+          success: false, 
+          error: emailValidation.error,
+          suggestion: emailValidation.suggestion 
+        },
         { status: 400 }
       );
     }

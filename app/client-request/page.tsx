@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Send, CheckCircle2, MessageCircle, ArrowRight, ShieldCheck, Calculator, Sparkles, ExternalLink } from 'lucide-react';
 import { ClipBDRepository } from '../../lib/db/repository';
 import { PlatformType } from '../../lib/types/database';
+import { validateEmail } from '../../lib/validation/email';
 
 export default function ClientRequestPage() {
   const [name, setName] = useState('');
@@ -66,6 +67,13 @@ Hi ClipCart Team! I want to launch this campaign. Please confirm review and admi
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      setError(emailCheck.error || 'Please provide a valid and complete email address.');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       await ClipBDRepository.createClientRequest({
