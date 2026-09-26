@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Filter, Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
 import { Submission } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
 import { SafeExternalLink } from '../../../components/shared/SafeExternalLink';
-
 import { useRouter } from 'next/navigation';
 import { getActiveUser } from '../../../lib/auth/session';
+import { useLanguage } from '../../../lib/i18n/context';
 
 export default function ClipperSubmissionsPage() {
   const router = useRouter();
+  const { t, lang } = useLanguage();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [loading, setLoading] = useState(true);
@@ -34,19 +35,28 @@ export default function ClipperSubmissionsPage() {
     }
     load();
   }, [filterStatus, router]);
+
+  const filterLabels: Record<string, string> = {
+    ALL: t.dashboardSubmissions.filterAll,
+    PENDING_HUMAN_REVIEW: t.dashboardSubmissions.filterPendingReview,
+    APPROVED: t.dashboardSubmissions.filterApproved,
+    REJECTED: t.dashboardSubmissions.filterRejected,
+    FLAGGED: t.dashboardSubmissions.filterFlagged,
+  };
+
   return (
     <div className="space-y-6">
       <div className="neo-box-lg p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="neo-sticker bg-zinc-950 text-white text-[10px]">Clipper Audit Feed</span>
-            <span className="neo-sticker bg-rose-100 text-rose-950 border-rose-950 text-[10px]">Live Posts</span>
+            <span className="neo-sticker bg-zinc-950 text-white text-[10px]">{t.dashboardSubmissions.tagAuditFeed}</span>
+            <span className="neo-sticker bg-rose-100 text-rose-950 border-rose-950 text-[10px]">{t.dashboardSubmissions.tagLivePosts}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 dark:text-white tracking-tight">
-            My Submissions
+            {t.dashboardSubmissions.title}
           </h1>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-            Track automated AI pre-filter scores, human view audits, and verified CPM payout calculations.
+            {t.dashboardSubmissions.subtitle}
           </p>
         </div>
         <Link
@@ -54,7 +64,7 @@ export default function ClipperSubmissionsPage() {
           className="neo-btn neo-btn-primary px-4 py-2 text-xs"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>New Clip Submission</span>
+          <span>{t.dashboardSubmissions.newClipSubmission}</span>
         </Link>
       </div>
 
@@ -70,7 +80,7 @@ export default function ClipperSubmissionsPage() {
                 : 'bg-white dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-[2px_2px_0px_#09090b]'
             }`}
           >
-            {st.replace(/_/g, ' ')}
+            {filterLabels[st] || st.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
@@ -78,11 +88,11 @@ export default function ClipperSubmissionsPage() {
       {/* Submissions List */}
       {loading ? (
         <div className="neo-box p-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-mono font-bold">
-          Loading submissions...
+          {t.dashboardSubmissions.loading}
         </div>
       ) : submissions.length === 0 ? (
         <div className="neo-box p-12 text-center text-xs text-zinc-500 dark:text-zinc-400 space-y-2 font-medium">
-          <p>No submissions found under this status filter.</p>
+          <p>{t.dashboardSubmissions.noSubmissions}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -93,7 +103,9 @@ export default function ClipperSubmissionsPage() {
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-zinc-950 dark:border-zinc-700 pb-3.5">
                 <div className="space-y-0.5">
-                  <span className="font-mono font-bold text-[10px] text-zinc-500 dark:text-zinc-400 uppercase">SUBMISSION ID: {sub.id}</span>
+                  <span className="font-mono font-bold text-[10px] text-zinc-500 dark:text-zinc-400 uppercase">
+                    {t.dashboardSubmissions.submissionId}: {sub.id}
+                  </span>
                   <h2 className="text-base font-['Unbounded'] font-black text-zinc-950 dark:text-white">{sub.campaignTitle || 'Campaign'}</h2>
                 </div>
                 <div className="flex items-center gap-2">
@@ -106,7 +118,7 @@ export default function ClipperSubmissionsPage() {
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 font-mono">
-                  <span className="text-zinc-500 font-bold">Live Post:</span>
+                  <span className="text-zinc-500 font-bold">{t.dashboardSubmissions.livePost}</span>
                   <SafeExternalLink
                     href={sub.postUrl}
                     showIcon={true}
@@ -128,11 +140,11 @@ export default function ClipperSubmissionsPage() {
                 {sub.flags && (
                   <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border-2 border-zinc-950 dark:border-zinc-700 space-y-1 shadow-[2px_2px_0px_#09090b]">
                     <span className="text-[10px] font-mono uppercase text-zinc-600 dark:text-zinc-300 font-bold block">
-                      Automated Pre-Filter Evaluation
+                      {t.dashboardSubmissions.preFilterEvaluation}
                     </span>
                     <div className="flex gap-4 font-mono text-[11px]">
-                      <span>Compliance: <strong className="text-emerald-600 dark:text-emerald-400 font-black">{sub.flags.complianceScore}%</strong></span>
-                      <span>Suspicion: <strong className={sub.flags.suspicionScore > 20 ? 'text-amber-500 font-black' : 'text-zinc-600 dark:text-zinc-400 font-bold'}>{sub.flags.suspicionScore}%</strong></span>
+                      <span>{t.dashboardSubmissions.compliance}: <strong className="text-emerald-600 dark:text-emerald-400 font-black">{sub.flags.complianceScore}%</strong></span>
+                      <span>{t.dashboardSubmissions.suspicion}: <strong className={sub.flags.suspicionScore > 20 ? 'text-amber-500 font-black' : 'text-zinc-600 dark:text-zinc-400 font-bold'}>{sub.flags.suspicionScore}%</strong></span>
                     </div>
                     <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">{sub.flags.reasoningSummary}</p>
                   </div>
@@ -141,11 +153,11 @@ export default function ClipperSubmissionsPage() {
                 {sub.review && (
                   <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border-2 border-zinc-950 dark:border-zinc-700 space-y-1 shadow-[2px_2px_0px_#09090b]">
                     <span className="text-[10px] font-mono uppercase text-zinc-600 dark:text-zinc-300 font-bold block">
-                      Moderator Audit & Note
+                      {t.dashboardSubmissions.moderatorAudit}
                     </span>
-                    <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium">{sub.review.adminNote || 'No notes left by reviewer.'}</p>
+                    <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium">{sub.review.adminNote || t.dashboardSubmissions.noNotes}</p>
                     {sub.review.rejectionReason && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-bold">Reason: {sub.review.rejectionReason}</p>
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-bold">{t.dashboardSubmissions.reasonLabel}: {sub.review.rejectionReason}</p>
                     )}
                   </div>
                 )}
@@ -154,8 +166,12 @@ export default function ClipperSubmissionsPage() {
               {/* Financial Outcome Footer */}
               {sub.status === 'APPROVED' && (
                 <div className="pt-3 border-t-2 border-zinc-950 dark:border-zinc-700 flex items-center justify-between font-mono">
-                  <span className="text-zinc-600 dark:text-zinc-400 font-medium">Verified Reach: <strong className="text-zinc-950 dark:text-white font-bold">{sub.views?.toLocaleString()} views</strong></span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">Approved Payout: ৳{sub.payout?.toLocaleString()}</span>
+                  <span className="text-zinc-600 dark:text-zinc-400 font-medium">
+                    {t.dashboardSubmissions.verifiedReach} <strong className="text-zinc-950 dark:text-white font-bold bn-amount">{sub.views?.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')} {t.dashboardSubmissions.viewsText}</strong>
+                  </span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm bn-amount">
+                    {t.dashboardSubmissions.approvedPayout} ৳{sub.payout?.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
+                  </span>
                 </div>
               )}
             </div>

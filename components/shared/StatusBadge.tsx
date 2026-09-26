@@ -1,16 +1,77 @@
+'use client';
+
 import React from 'react';
+import { useLanguage } from '../../lib/i18n/context';
 
 export interface StatusBadgeProps {
   status: string;
   size?: 'sm' | 'md';
+  label?: string;
 }
 
-export function StatusBadge({ status, size = 'md' }: StatusBadgeProps) {
+const statusLabels: Record<'en' | 'bn', Record<string, string>> = {
+  en: {
+    ACTIVE: 'ACTIVE',
+    APPROVED: 'APPROVED',
+    PAID: 'PAID',
+    COMPLETED: 'COMPLETED',
+    PENDING_PAYMENT: 'PENDING PAYMENT',
+    PENDING_HUMAN_REVIEW: 'PENDING REVIEW',
+    PENDING_AI_REVIEW: 'AI SCREENING',
+    PENDING: 'PENDING',
+    REQUESTED: 'REQUESTED',
+    UNDER_REVIEW: 'UNDER REVIEW',
+    PROCESSING: 'PROCESSING',
+    SCHEDULED: 'SCHEDULED',
+    CONTACTED: 'CONTACTED',
+    NEGOTIATING: 'NEGOTIATING',
+    NEW: 'NEW',
+    REJECTED: 'REJECTED',
+    CANCELLED: 'CANCELLED',
+    FLAGGED: 'FLAGGED',
+    SUSPENDED: 'SUSPENDED',
+    BANNED: 'BANNED',
+  },
+  bn: {
+    ACTIVE: 'সক্রিয়',
+    APPROVED: 'অনুমোদিত',
+    PAID: 'পরিশোধিত',
+    COMPLETED: 'সম্পন্ন',
+    PENDING_PAYMENT: 'পেমেন্ট প্রক্রিয়াধীন',
+    PENDING_HUMAN_REVIEW: 'যাচাই চলছে',
+    PENDING_AI_REVIEW: 'AI স্ক্রিনিং',
+    PENDING: 'অপেক্ষমাণ',
+    REQUESTED: 'রিকোয়েস্টেড',
+    UNDER_REVIEW: 'যাচাই চলছে',
+    PROCESSING: 'প্রক্রিয়াধীন',
+    SCHEDULED: 'নির্ধারিত',
+    CONTACTED: 'যোগাযোগ করা হয়েছে',
+    NEGOTIATING: 'আলোচনাধীন',
+    NEW: 'নতুন',
+    REJECTED: 'বাতিল',
+    CANCELLED: 'বাতিল',
+    FLAGGED: 'সন্দেহজনক',
+    SUSPENDED: 'স্থগিত',
+    BANNED: 'ব্যানড',
+  },
+};
+
+export function StatusBadge({ status, size = 'md', label: customLabel }: StatusBadgeProps) {
+  let lang: 'en' | 'bn' = 'bn';
+  try {
+    const langContext = useLanguage();
+    if (langContext?.lang) {
+      lang = langContext.lang;
+    }
+  } catch {
+    // Default to bn
+  }
+
   const norm = status.toUpperCase();
 
   let colors = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-950 dark:border-zinc-700';
   let dotColor = 'bg-zinc-600 dark:bg-zinc-400';
-  const label = status.replace(/_/g, ' ');
+  const label = customLabel || statusLabels[lang]?.[norm] || status.replace(/_/g, ' ');
 
   // Success / Active / Approved / Paid
   if (['ACTIVE', 'APPROVED', 'PAID', 'COMPLETED'].includes(norm)) {

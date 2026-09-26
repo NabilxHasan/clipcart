@@ -12,25 +12,15 @@ import {
   Trophy, 
   User, 
   Bell, 
-  ArrowLeft 
 } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
 import { getActiveUser } from '../../lib/auth/session';
 import { Profile } from '../../lib/types/database';
-
-const navItems = [
-  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Campaigns', href: '/dashboard/campaigns', icon: Flame },
-  { name: 'My Submissions', href: '/dashboard/submissions', icon: Video },
-  { name: 'Earnings Ledger', href: '/dashboard/earnings', icon: Banknote },
-  { name: 'Withdrawals', href: '/dashboard/withdrawals', icon: CreditCard },
-  { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
-  { name: 'Profile & Payouts', href: '/dashboard/profile', icon: User },
-  { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-];
+import { useLanguage } from '../../lib/i18n/context';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 
   useEffect(() => {
@@ -39,6 +29,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setCurrentUser(user);
     }
   }, [pathname]);
+
+  const navItems = [
+    { name: t.dashboardNav.overview, href: '/dashboard', icon: LayoutDashboard },
+    { name: t.dashboardNav.campaigns, href: '/dashboard/campaigns', icon: Flame },
+    { name: t.dashboardNav.submissions, href: '/dashboard/submissions', icon: Video },
+    { name: t.dashboardNav.earnings, href: '/dashboard/earnings', icon: Banknote },
+    { name: t.dashboardNav.withdrawals, href: '/dashboard/withdrawals', icon: CreditCard },
+    { name: t.dashboardNav.leaderboard, href: '/dashboard/leaderboard', icon: Trophy },
+    { name: t.dashboardNav.profile, href: '/dashboard/profile', icon: User },
+    { name: t.dashboardNav.notifications, href: '/dashboard/notifications', icon: Bell },
+  ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -49,23 +50,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex items-center justify-between">
               {currentUser?.status === 'APPROVED' ? (
                 <span className="neo-sticker bg-emerald-600 text-white text-[9px] px-2 py-0.5">
-                  Verified Clipper
+                  {t.dashboardLayout.verifiedClipper}
                 </span>
               ) : (
                 <span className="neo-sticker bg-amber-500 text-zinc-950 font-bold text-[9px] px-2 py-0.5">
-                  ৳50 Under Review
+                  <span className="bn-amount">{t.dashboardLayout.underReview}</span>
                 </span>
               )}
               <span 
                 className={`w-2.5 h-2.5 rounded-full border border-zinc-950 dark:border-zinc-700 ${
                   currentUser?.status === 'APPROVED' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
                 }`} 
-                title={currentUser?.status === 'APPROVED' ? 'Active Approved Account' : 'Verification Under Review'} 
+                title={currentUser?.status === 'APPROVED' ? t.dashboardLayout.activeAccountTooltip : t.dashboardLayout.underReviewTooltip} 
               />
             </div>
             <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-2.5">
               <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white truncate">
-                {currentUser?.fullName || 'ClipCart Creator'}
+                {currentUser?.fullName || t.dashboardLayout.defaultCreator}
               </h2>
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold truncate block">
                 {currentUser?.email || (currentUser?.phoneWhatsapp ? currentUser.phoneWhatsapp : '@creator')}
@@ -105,11 +106,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="neo-box p-4 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-950 dark:border-amber-700 text-amber-950 dark:text-amber-200 flex items-start gap-3 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000]">
               <span className="text-base leading-none mt-0.5">⏳</span>
               <div className="space-y-1 text-xs">
-                <span className="font-['Unbounded'] font-bold block">
-                  ৳50 Sign-up Verification Under Review
+                <span className="font-['Unbounded'] font-bold block bn-amount">
+                  {t.dashboardLayout.underReviewBannerTitle}
                 </span>
-                <p className="font-medium text-amber-900 dark:text-amber-300">
-                  Your bKash transaction is being verified by ClipCart admins. You can explore active briefs and prepare your video clips. Approved submissions and payouts will activate as soon as your transaction is verified.
+                <p className="font-medium text-amber-900 dark:text-amber-300 leading-relaxed">
+                  {t.dashboardLayout.underReviewBannerDesc}
                 </p>
               </div>
             </div>

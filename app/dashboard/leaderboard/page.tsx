@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Trophy, Medal, Sparkles, Flame, CheckCircle2 } from 'lucide-react';
+import { Trophy, Sparkles } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
+import { useLanguage } from '../../../lib/i18n/context';
 
 export default function LeaderboardPage() {
+  const { t, lang } = useLanguage();
   const [leaders, setLeaders] = useState<Array<{
     rank: number;
     name: string;
@@ -26,6 +28,12 @@ export default function LeaderboardPage() {
     load();
   }, [timeFilter]);
 
+  const timeFilterLabels: Record<'ALL_TIME' | 'THIS_MONTH' | 'THIS_WEEK', string> = {
+    ALL_TIME: t.dashboardLeaderboard.filterAllTime,
+    THIS_MONTH: t.dashboardLeaderboard.filterThisMonth,
+    THIS_WEEK: t.dashboardLeaderboard.filterThisWeek,
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -33,18 +41,18 @@ export default function LeaderboardPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="neo-sticker bg-zinc-950 text-white dark:bg-rose-600 text-[10px]">
-              Top Cutters
+              {t.dashboardLeaderboard.tagTopCutters}
             </span>
             <span className="neo-sticker bg-amber-100 text-amber-950 border-amber-950 text-[10px] flex items-center gap-1">
               <Trophy className="w-3 h-3 text-amber-600" />
-              Verified Performance
+              {t.dashboardLeaderboard.tagVerifiedPerformance}
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-['Unbounded'] font-black uppercase text-zinc-950 dark:text-white tracking-tight">
-            Clipper Hall of Fame
+            {t.dashboardLeaderboard.title}
           </h1>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
-            Ranked strictly by verified views and ledger payouts. 100% genuine audience retention.
+            {t.dashboardLeaderboard.subtitle}
           </p>
         </div>
 
@@ -60,7 +68,7 @@ export default function LeaderboardPage() {
                   : 'bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-950 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700'
               }`}
             >
-              {tf.replace('_', ' ')}
+              {timeFilterLabels[tf] || tf.replace('_', ' ')}
             </button>
           ))}
         </div>
@@ -72,28 +80,28 @@ export default function LeaderboardPage() {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-rose-600" />
             <span className="font-['Unbounded'] font-bold text-xs uppercase text-zinc-950 dark:text-white">
-              Verified Creator Rankings
+              {t.dashboardLeaderboard.cardTitle}
             </span>
           </div>
           <span className="text-[11px] font-mono font-bold text-zinc-500 dark:text-zinc-400">
-            {leaders.length} Active Ranked Creators
+            {t.dashboardLeaderboard.activeRanked.replace('{count}', String(leaders.length))}
           </span>
         </div>
 
         {loading ? (
           <div className="py-12 text-center text-xs font-mono font-bold text-zinc-500 dark:text-zinc-400">
-            Loading real-time rankings...
+            {t.dashboardLeaderboard.loading}
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="border-b-2.5 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-mono text-[11px] uppercase font-bold">
                 <tr>
-                  <th className="py-3 px-4 text-center w-16">Rank</th>
-                  <th className="py-3 px-4">Clipper</th>
-                  <th className="py-3 px-4 text-right">Verified Views</th>
-                  <th className="py-3 px-4 text-right">Approved Clips</th>
-                  <th className="py-3 px-4 text-right">Total Payouts</th>
+                  <th className="py-3 px-4 text-center w-16">{t.dashboardLeaderboard.thRank}</th>
+                  <th className="py-3 px-4">{t.dashboardLeaderboard.thClipper}</th>
+                  <th className="py-3 px-4 text-right">{t.dashboardLeaderboard.thViews}</th>
+                  <th className="py-3 px-4 text-right">{t.dashboardLeaderboard.thClips}</th>
+                  <th className="py-3 px-4 text-right">{t.dashboardLeaderboard.thPayouts}</th>
                 </tr>
               </thead>
               <tbody className="divide-y-2 divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-[#14151a]">
@@ -134,14 +142,14 @@ export default function LeaderboardPage() {
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-right font-black text-zinc-950 dark:text-white text-sm">
-                        {lead.approvedViews.toLocaleString()}
+                      <td className="py-3.5 px-4 font-mono text-right font-black text-zinc-950 dark:text-white text-sm bn-amount">
+                        {lead.approvedViews.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-right font-bold text-zinc-600 dark:text-zinc-300">
-                        {lead.approvedClips} clips
+                      <td className="py-3.5 px-4 font-mono text-right font-bold text-zinc-600 dark:text-zinc-300 bn-amount">
+                        {lead.approvedClips} {t.dashboardLeaderboard.clipsSuffix}
                       </td>
-                      <td className="py-3.5 px-4 font-mono text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
-                        ৳{lead.approvedEarnings.toLocaleString()}
+                      <td className="py-3.5 px-4 font-mono text-right font-black text-emerald-600 dark:text-emerald-400 text-sm bn-amount">
+                        ৳{lead.approvedEarnings.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
                       </td>
                     </tr>
                   );
