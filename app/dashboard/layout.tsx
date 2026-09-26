@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
@@ -15,6 +15,8 @@ import {
   ArrowLeft 
 } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
+import { getActiveUser } from '../../lib/auth/session';
+import { Profile } from '../../lib/types/database';
 
 const navItems = [
   { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -29,6 +31,14 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    const user = getActiveUser();
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, [pathname]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -37,12 +47,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <aside className="lg:col-span-1 space-y-5">
           <div className="neo-box p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="neo-sticker bg-zinc-950 text-white dark:bg-rose-600 text-[9px] px-2 py-0.5">Clipper Pro</span>
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 border border-zinc-950 dark:border-zinc-700" title="Active Account" />
+              {currentUser?.status === 'APPROVED' ? (
+                <span className="neo-sticker bg-emerald-600 text-white text-[9px] px-2 py-0.5">
+                  Verified Clipper
+                </span>
+              ) : (
+                <span className="neo-sticker bg-amber-500 text-zinc-950 font-bold text-[9px] px-2 py-0.5">
+                  ৳50 Under Review
+                </span>
+              )}
+              <span 
+                className={`w-2.5 h-2.5 rounded-full border border-zinc-950 dark:border-zinc-700 ${
+                  currentUser?.status === 'APPROVED' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
+                }`} 
+                title={currentUser?.status === 'APPROVED' ? 'Active Approved Account' : 'Verification Under Review'} 
+              />
             </div>
             <div className="border-t-2 border-zinc-950 dark:border-zinc-700 pt-2.5">
-              <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white">Tanvir Hossain</h2>
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold">@tanvir.edits</span>
+              <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white truncate">
+                {currentUser?.fullName || 'ClipCart Creator'}
+              </h2>
+              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold truncate block">
+                {currentUser?.email || (currentUser?.phoneWhatsapp ? currentUser.phoneWhatsapp : '@creator')}
+              </span>
             </div>
           </div>
 
@@ -74,6 +101,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Main Content Pane */}
         <main className="lg:col-span-4 space-y-6 min-w-0">
+          {currentUser?.status === 'PENDING' && (
+            <div className="neo-box p-4 bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-950 dark:border-amber-700 text-amber-950 dark:text-amber-200 flex items-start gap-3 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000]">
+              <span className="text-base leading-none mt-0.5">⏳</span>
+              <div className="space-y-1 text-xs">
+                <span className="font-['Unbounded'] font-bold block">
+                  ৳50 Sign-up Verification Under Review
+                </span>
+                <p className="font-medium text-amber-900 dark:text-amber-300">
+                  Your bKash transaction is being verified by ClipCart admins. You can explore active briefs and prepare your video clips. Approved submissions and payouts will activate as soon as your transaction is verified.
+                </p>
+              </div>
+            </div>
+          )}
           {children}
         </main>
       </div>

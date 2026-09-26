@@ -29,6 +29,7 @@ export interface Profile {
   phoneWhatsapp?: string;
   country: string;
   status: UserStatus;
+  password?: string;
   createdAt: string;
   updatedAt: string;
 }

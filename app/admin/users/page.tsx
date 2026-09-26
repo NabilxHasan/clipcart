@@ -10,8 +10,39 @@ export default function AdminUsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const loadData = () => {
-    setProfiles([...mockStore.profiles]);
+  const loadData = async () => {
+    let allProfiles = [...mockStore.profiles];
+
+    try {
+      const res = await fetch('/api/auth/users');
+      const data = await res.json();
+      if (res.ok && data.success && Array.isArray(data.profiles)) {
+        for (const sp of data.profiles) {
+          const idx = mockStore.profiles.findIndex(p => p.id === sp.id || p.email.toLowerCase() === sp.email.toLowerCase());
+          if (idx >= 0) {
+            mockStore.profiles[idx] = { ...mockStore.profiles[idx], ...sp };
+          } else {
+            mockStore.profiles.push(sp);
+          }
+        }
+        if (Array.isArray(data.clipperProfiles)) {
+          for (const scp of data.clipperProfiles) {
+            const cpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === scp.userId);
+            if (cpIdx >= 0) {
+              mockStore.clipperProfiles[cpIdx] = { ...mockStore.clipperProfiles[cpIdx], ...scp };
+            } else {
+              mockStore.clipperProfiles.push(scp);
+            }
+          }
+        }
+        mockStore.saveToStorage();
+        allProfiles = [...mockStore.profiles];
+      }
+    } catch {
+      // Local fallback
+    }
+
+    setProfiles(allProfiles);
   };
 
   useEffect(() => {
@@ -29,14 +60,24 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleStatusChange = (userId: string, status: UserStatus) => {
+  const handleStatusChange = async (userId: string, status: UserStatus) => {
     const p = mockStore.profiles.find(user => user.id === userId);
     if (p) {
       p.status = status;
       p.updatedAt = new Date().toISOString();
       mockStore.saveToStorage();
       setFeedback(`Updated status for ${p.fullName} to ${status}`);
-      loadData();
+      setProfiles([...mockStore.profiles]);
+
+      try {
+        await fetch('/api/auth/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, status }),
+        });
+      } catch (err) {
+        console.warn('Could not sync status change to backend:', err);
+      }
     }
   };
 

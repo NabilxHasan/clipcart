@@ -174,12 +174,9 @@ html, body {
   color: #d4d4d8 !important;
 }
 
-/* Force dark text for buttons/badges with white backgrounds in dark mode */
+/* Force dark text ONLY for elements explicitly tagged as .text-on-light */
 .dark .text-on-light,
-.dark .bg-white .text-on-light,
-.dark .bg-white .text-zinc-950,
-.dark a.bg-white span,
-.dark button.bg-white span {
+.dark .text-on-light * {
   color: #09090b !important;
 }
 

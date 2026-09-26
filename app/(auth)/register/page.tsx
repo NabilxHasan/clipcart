@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Lock, PlaySquare, MessageCircle, CheckCircle2, AlertTriangle, Copy } from 'lucide-react';
-import { PlatformType, PaymentMethod } from '../../../lib/types/database';
+import { PlatformType, PaymentMethod, Profile, ClipperProfile } from '../../../lib/types/database';
 import { mockStore } from '../../../lib/db/mock-store';
 import { useLanguage } from '../../../lib/i18n/context';
 
@@ -15,6 +15,8 @@ export default function RegisterPage() {
   // Basic Details
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneWhatsapp, setPhoneWhatsapp] = useState('');
   const [country, setCountry] = useState('Bangladesh');
 
@@ -62,6 +64,18 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter your password.');
+      setLoading(false);
+      return;
+    }
+
     if (signupPaymentMethod === 'NAGAD') {
       setError(
         'Nagad is currently not available. Please send the ৳50 verification fee via bKash to +8801882480457.'
@@ -82,39 +96,77 @@ export default function RegisterPage() {
       const newUserId = `usr-${Date.now().toString(36)}`;
 
       // 1. Create Profile with PENDING status until ৳50 fee is verified
-      const newProfile = {
+      const newProfile: Profile = {
         id: newUserId,
-        email,
+        email: email.trim().toLowerCase(),
         role: 'CLIPPER' as const,
-        fullName,
-        phoneWhatsapp,
+        fullName: fullName.trim(),
+        phoneWhatsapp: phoneWhatsapp.trim(),
         country,
         status: 'PENDING' as const,
+        password,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      mockStore.profiles.push(newProfile);
 
       // 2. Create Clipper Profile with verification TrxID & social handles
-      mockStore.clipperProfiles.push({
+      const newClipperProfile: ClipperProfile = {
         userId: newUserId,
-        tiktokHandle: tiktokHandle || undefined,
-        instagramHandle: instagramHandle || undefined,
-        youtubeHandle: youtubeHandle || undefined,
-        facebookHandle: facebookHandle || undefined,
+        tiktokHandle: tiktokHandle.trim() || undefined,
+        instagramHandle: instagramHandle.trim() || undefined,
+        youtubeHandle: youtubeHandle.trim() || undefined,
+        facebookHandle: facebookHandle.trim() || undefined,
         preferredPlatforms,
-        editingExperience: editingExperience || undefined,
-        portfolioUrl: portfolioUrl || undefined,
+        editingExperience: editingExperience.trim() || undefined,
+        portfolioUrl: portfolioUrl.trim() || undefined,
         paymentMethod,
-        paymentIdentifier,
-        signupTrxId: signupTrxId.trim(),
+        paymentIdentifier: paymentIdentifier.trim(),
+        signupTrxId: signupTrxId.trim().toUpperCase(),
         signupPaymentMethod,
         approvedViewsTotal: 0,
         approvedEarningsTotal: 0,
         approvedClipsTotal: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      });
+      };
+
+      // 3. Register to server store and Supabase via backend API
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            profile: newProfile,
+            clipperProfile: newClipperProfile,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || 'Registration failed');
+          setLoading(false);
+          return;
+        }
+      } catch (apiErr) {
+        console.warn('API sync notice:', apiErr);
+      }
+
+      // 4. Update local mockStore
+      const existingProfileIdx = mockStore.profiles.findIndex(
+        p => p.email.toLowerCase() === newProfile.email.toLowerCase() || p.id === newProfile.id
+      );
+      if (existingProfileIdx >= 0) {
+        mockStore.profiles[existingProfileIdx] = newProfile;
+      } else {
+        mockStore.profiles.push(newProfile);
+      }
+
+      const existingCpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === newUserId);
+      if (existingCpIdx >= 0) {
+        mockStore.clipperProfiles[existingCpIdx] = newClipperProfile;
+      } else {
+        mockStore.clipperProfiles.push(newClipperProfile);
+      }
 
       mockStore.saveToStorage();
       if (typeof window !== 'undefined') {
@@ -267,6 +319,34 @@ export default function RegisterPage() {
                     placeholder={t.registerPage.emailPlaceholder}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:bg-white dark:focus:bg-zinc-800 text-xs font-medium"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
+                    {t.registerPage.passwordLabel}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder={t.registerPage.passwordPlaceholder}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:bg-white dark:focus:bg-zinc-800 text-xs font-medium"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
+                    {t.registerPage.confirmPasswordLabel}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength={6}
+                    placeholder={t.registerPage.confirmPasswordPlaceholder}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:bg-white dark:focus:bg-zinc-800 text-xs font-medium"
                   />
                 </div>

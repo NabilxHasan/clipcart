@@ -18,6 +18,7 @@ export default function ClipperProfilePage() {
   const [tiktokHandle, setTiktokHandle] = useState('');
   const [instagramHandle, setInstagramHandle] = useState('');
   const [youtubeHandle, setYoutubeHandle] = useState('');
+  const [facebookHandle, setFacebookHandle] = useState('');
   const [editingExperience, setEditingExperience] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('BKASH');
@@ -41,6 +42,7 @@ export default function ClipperProfilePage() {
         setTiktokHandle(cp.tiktokHandle || '');
         setInstagramHandle(cp.instagramHandle || '');
         setYoutubeHandle(cp.youtubeHandle || '');
+        setFacebookHandle(cp.facebookHandle || '');
         setEditingExperience(cp.editingExperience || '');
         setPortfolioUrl(cp.portfolioUrl || '');
         setPaymentMethod(cp.paymentMethod);
@@ -62,6 +64,7 @@ export default function ClipperProfilePage() {
         tiktokHandle,
         instagramHandle,
         youtubeHandle,
+        facebookHandle,
         editingExperience,
         portfolioUrl,
         paymentMethod,
@@ -125,7 +128,7 @@ export default function ClipperProfilePage() {
             <span className="text-[10px] font-mono text-zinc-500 font-bold">Public Attribution</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
             <div className="space-y-1.5">
               <label className="text-zinc-700 dark:text-zinc-300 font-bold block font-sans text-xs">TikTok Handle</label>
               <input
@@ -153,6 +156,16 @@ export default function ClipperProfilePage() {
                 placeholder="@channel"
                 value={youtubeHandle}
                 onChange={(e) => setYoutubeHandle(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono text-xs focus:outline-none focus:shadow-[2px_2px_0px_#e11d48]"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-zinc-700 dark:text-zinc-300 font-bold block font-sans text-xs">Facebook Profile/Page</label>
+              <input
+                type="text"
+                placeholder="facebook.com/... or @handle"
+                value={facebookHandle}
+                onChange={(e) => setFacebookHandle(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono text-xs focus:outline-none focus:shadow-[2px_2px_0px_#e11d48]"
               />
             </div>

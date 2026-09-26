@@ -15,41 +15,101 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    if (!identifier.trim()) {
+    const cleanId = identifier.trim();
+    const cleanPw = password.trim();
+
+    if (!cleanId) {
       setError('Please enter your registered email or phone number.');
       setLoading(false);
       return;
     }
 
-    // Lookup clipper
-    const user = mockStore.profiles.find(
-      p => (p.email?.toLowerCase() === identifier.trim().toLowerCase() || p.phoneWhatsapp?.includes(identifier.trim())) && p.role === 'CLIPPER'
-    );
-
-    if (user) {
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('clipcart_active_user', JSON.stringify(user));
-      }
-      router.push('/dashboard');
-    } else {
-      // Set active user session and route to dashboard
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('clipcart_active_user', JSON.stringify({
-          id: `usr-${Date.now().toString(36)}`,
-          email: identifier.includes('@') ? identifier : `${identifier}@clipcart.bd`,
-          fullName: 'ClipCart Creator',
-          role: 'CLIPPER',
-          phoneWhatsapp: identifier,
-          createdAt: new Date().toISOString()
-        }));
-      }
-      router.push('/dashboard');
+    if (!cleanPw) {
+      setError('Please enter your account password.');
+      setLoading(false);
+      return;
     }
+
+    try {
+      // 1. Authenticate against Server API
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: cleanId,
+          password: cleanPw,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success && data.user) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('clipcart_active_user', JSON.stringify(data.user));
+        }
+
+        // Sync into local mockStore
+        const idx = mockStore.profiles.findIndex(
+          p => p.id === data.user.id || p.email.toLowerCase() === data.user.email.toLowerCase()
+        );
+        if (idx >= 0) {
+          mockStore.profiles[idx] = { ...mockStore.profiles[idx], ...data.user };
+        } else {
+          mockStore.profiles.push(data.user);
+        }
+
+        if (data.clipperProfile) {
+          const cpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === data.user.id);
+          if (cpIdx >= 0) {
+            mockStore.clipperProfiles[cpIdx] = { ...mockStore.clipperProfiles[cpIdx], ...data.clipperProfile };
+          } else {
+            mockStore.clipperProfiles.push(data.clipperProfile);
+          }
+        }
+        mockStore.saveToStorage();
+
+        router.push('/dashboard');
+        return;
+      }
+
+      // If server returned an explicit error response (e.g. 401 wrong password / no user found)
+      if (!res.ok) {
+        setError(data.error || 'Invalid credentials. Please verify your email/phone and password.');
+        setLoading(false);
+        return;
+      }
+    } catch (networkErr) {
+      // 2. Offline / Network fallback: verify against local mockStore
+      console.warn('Network issue during login, attempting local fallback verification:', networkErr);
+      const user = mockStore.profiles.find(
+        p => (p.email?.toLowerCase() === cleanId.toLowerCase() || (p.phoneWhatsapp && p.phoneWhatsapp.includes(cleanId)))
+      );
+
+      const clipperProfile = user ? mockStore.clipperProfiles.find(cp => cp.userId === user.id) : undefined;
+
+      const isPasswordMatch = user?.password && user.password === cleanPw;
+      const isTrxIdMatch = clipperProfile?.signupTrxId && clipperProfile.signupTrxId.toLowerCase() === cleanPw.toLowerCase();
+
+      if (user && (isPasswordMatch || isTrxIdMatch)) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('clipcart_active_user', JSON.stringify(user));
+        }
+        router.push('/dashboard');
+        return;
+      }
+
+      setError('No registered account found with those credentials. Please check your credentials or register.');
+      setLoading(false);
+      return;
+    }
+
+    setError('Authentication failed. Please verify your credentials.');
+    setLoading(false);
   };
 
   return (
