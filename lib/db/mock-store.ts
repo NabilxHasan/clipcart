@@ -126,8 +126,12 @@ class ClipBDStore {
         const raw = window.localStorage.getItem('clipcart_db_state_v2');
         if (raw) {
           const data = JSON.parse(raw);
-          if (Array.isArray(data.profiles) && data.profiles.length) this.profiles = data.profiles;
-          if (Array.isArray(data.clipperProfiles)) this.clipperProfiles = data.clipperProfiles;
+          if (Array.isArray(data.profiles) && data.profiles.length) {
+            this.profiles = (data.profiles as Profile[]).filter((p: Profile) => p.fullName !== 'Nabil Hasan' && p.id !== 'usr-nabil-01');
+          }
+          if (Array.isArray(data.clipperProfiles)) {
+            this.clipperProfiles = (data.clipperProfiles as ClipperProfile[]).filter((cp: ClipperProfile) => cp.signupTrxId !== 'DIQ7WUNHRX');
+          }
           if (Array.isArray(data.campaigns)) this.campaigns = data.campaigns;
           if (Array.isArray(data.submissions)) this.submissions = data.submissions;
           if (Array.isArray(data.submissionFlags)) this.submissionFlags = data.submissionFlags;

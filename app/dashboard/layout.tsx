@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Flame, 
@@ -12,14 +12,16 @@ import {
   Trophy, 
   User, 
   Bell, 
+  LogOut,
 } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
-import { getActiveUser } from '../../lib/auth/session';
+import { getActiveUser, clearActiveUser } from '../../lib/auth/session';
 import { Profile } from '../../lib/types/database';
 import { useLanguage } from '../../lib/i18n/context';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useLanguage();
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
 
@@ -29,6 +31,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setCurrentUser(user);
     }
   }, [pathname]);
+
+  const handleLogout = () => {
+    clearActiveUser();
+    router.push('/register');
+  };
 
   const navItems = [
     { name: t.dashboardNav.overview, href: '/dashboard', icon: LayoutDashboard },
@@ -71,6 +78,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-bold truncate block">
                 {currentUser?.email || (currentUser?.phoneWhatsapp ? currentUser.phoneWhatsapp : '@creator')}
               </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-[11px] font-['Space_Grotesk'] font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-900/60 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all shadow-[1.5px_1.5px_0px_#09090b] dark:shadow-[1.5px_1.5px_0px_#000000] active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>{t.dashboardNav.logout}</span>
+              </button>
             </div>
           </div>
 
@@ -93,6 +108,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               );
             })}
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-['Space_Grotesk'] font-bold whitespace-nowrap transition-all text-rose-600 dark:text-rose-400 hover:text-white hover:bg-rose-600 border-2 border-transparent hover:border-zinc-950 dark:hover:border-zinc-700 hover:shadow-[2px_2px_0px_#09090b] dark:hover:shadow-[2px_2px_0px_#000000] text-left w-full"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>{t.dashboardNav.logout}</span>
+            </button>
           </nav>
 
           <div className="hidden lg:block pt-3 border-t-2 border-zinc-950 dark:border-zinc-700">

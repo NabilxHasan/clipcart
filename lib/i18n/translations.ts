@@ -22,6 +22,7 @@ const translationsData = {
       clipperWorkspace: 'Clipper Dashboard',
       language: 'Language',
       selectLanguage: 'Switch Language',
+      logout: 'Log Out',
     },
     // Hero Section
     hero: {
@@ -202,6 +203,7 @@ const translationsData = {
       leaderboard: 'Leaderboard',
       profile: 'Profile & Payouts',
       notifications: 'Notifications',
+      logout: 'Log Out',
     },
     // Dashboard Layout & Sidebar
     dashboardLayout: {
@@ -421,6 +423,12 @@ const translationsData = {
       saving: 'Saving...',
       saveBtn: 'Save Profile Changes',
       loading: 'Loading creator profile...',
+      dangerZone: 'Danger Zone: Account Actions',
+      deleteAccount: 'Delete Clipper Account',
+      deleteWarning: 'Permanently delete your clipper profile and clear local session data. If your account was created before the password update or you wish to start over, this will fully remove your registration.',
+      deleteBtn: 'Permanently Delete Account',
+      confirmDelete: 'Are you sure you want to permanently delete this clipper account? This will erase your registration and log you out.',
+      deleting: 'Deleting account...',
     },
     // Dashboard Notifications Page
     dashboardNotifications: {
@@ -583,6 +591,7 @@ const translationsData = {
       clipperWorkspace: 'ক্লিপার ড্যাশবোর্ড',
       language: 'ভাষা',
       selectLanguage: 'ভাষা পরিবর্তন',
+      logout: 'লগ আউট',
     },
     // Hero Section
     hero: {
@@ -763,6 +772,7 @@ const translationsData = {
       leaderboard: 'লিডারবোর্ড',
       profile: 'প্রোফাইল ও পেমেন্ট',
       notifications: 'নোটিফিকেশন',
+      logout: 'লগ আউট',
     },
     // Dashboard Layout & Sidebar
     dashboardLayout: {
@@ -982,6 +992,12 @@ const translationsData = {
       saving: 'সংরক্ষণ হচ্ছে...',
       saveBtn: 'পরিবর্তনগুলো সেভ করুন',
       loading: 'প্রোফাইল লোড হচ্ছে...',
+      dangerZone: 'ডেঞ্জার জোনঃ অ্যাকাউন্ট অ্যাকশন',
+      deleteAccount: 'ক্লিপার অ্যাকাউন্ট ডিলিট করুন',
+      deleteWarning: 'আপনার ক্লিপার প্রোফাইল ও সেশন ডেটা স্থায়ীভাবে মুছে ফেলুন। পাসওয়ার্ড আপডেটের আগের অ্যাকাউন্ট বা নতুন করে শুরু করতে এটি অ্যাকাউন্ট পুরোপুরি ডিলিট করবে।',
+      deleteBtn: 'স্থায়ীভাবে অ্যাকাউন্ট মুছে ফেলুন',
+      confirmDelete: 'আপনি কি নিশ্চিত যে এই ক্লিপার অ্যাকাউন্টটি মুছে ফেলতে চান? এতে আপনার সমস্ত রেজিস্ট্রেশন মুছে যাবে এবং আপনি লগ আউট হবেন।',
+      deleting: 'অ্যাকাউন্ট ডিলিট হচ্ছে...',
     },
     // Dashboard Notifications Page
     dashboardNotifications: {

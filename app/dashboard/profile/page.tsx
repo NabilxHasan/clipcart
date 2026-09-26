@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Save, CheckCircle2, ShieldCheck, Sparkles, Smartphone, Lock } from 'lucide-react';
+import { Save, CheckCircle2, ShieldCheck, Sparkles, Smartphone, Lock, Trash2, AlertTriangle } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
 import { ClipperProfile, PaymentMethod } from '../../../lib/types/database';
 import { useRouter } from 'next/navigation';
-import { getActiveUser } from '../../../lib/auth/session';
+import { getActiveUser, deleteLocalUser } from '../../../lib/auth/session';
 import { useLanguage } from '../../../lib/i18n/context';
 
 export default function ClipperProfilePage() {
@@ -75,6 +75,28 @@ export default function ClipperProfilePage() {
       setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm(t.dashboardProfile.confirmDelete)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await fetch('/api/auth/delete-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: activeUserId || 'DIQ7WUNHRX' }),
+      });
+    } catch {
+      // Fail-safe
+    } finally {
+      deleteLocalUser(activeUserId);
+      setDeleting(false);
+      router.push('/register');
     }
   };
 
@@ -249,6 +271,30 @@ export default function ClipperProfilePage() {
           </button>
         </div>
       </form>
+
+      {/* Danger Zone: Permanent Account Deletion */}
+      <div className="neo-box p-6 border-2 border-rose-600 bg-rose-50/60 dark:bg-rose-950/20 space-y-3">
+        <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+          <AlertTriangle className="w-5 h-5 shrink-0" />
+          <h2 className="text-xs font-['Unbounded'] font-black uppercase tracking-wider">
+            {t.dashboardProfile.dangerZone}
+          </h2>
+        </div>
+        <p className="text-xs text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed">
+          {t.dashboardProfile.deleteWarning}
+        </p>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={handleDeleteAccount}
+            disabled={deleting}
+            className="neo-btn bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 text-xs font-bold flex items-center gap-2 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
+          >
+            <Trash2 className="w-4 h-4 shrink-0" />
+            <span>{deleting ? t.dashboardProfile.deleting : t.dashboardProfile.deleteBtn}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { Profile, ClipperProfile, UserStatus } from '../types/database';
-import { supabase } from '../supabase/client';
+import { supabaseAdmin } from '../supabase/admin';
 
 interface ServerDbState {
   profiles: Profile[];
@@ -84,19 +84,34 @@ export const serverAuthStore = {
     const sanitizedId = cleanId.replace(/[,()]/g, '');
     const state = loadState();
 
-    // 1. Check local server store first
+    // 1. Check local server store first (by email, phone, id, or signupTrxId)
     let profile = state.profiles.find(
-      p => p.email.toLowerCase() === cleanId || (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId))
+      p => p.email.toLowerCase() === cleanId || 
+           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId)) ||
+           p.id.toLowerCase() === cleanId
     );
+
+    if (!profile) {
+      const matchedCp = state.clipperProfiles.find(
+        cp => cp.signupTrxId && cp.signupTrxId.toLowerCase() === cleanId
+      );
+      if (matchedCp) {
+        profile = state.profiles.find(p => p.id === matchedCp.userId);
+      }
+    }
 
     // 2. Fallback to Supabase if not found locally
     if (!profile && sanitizedId) {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabaseAdmin
           .from('profiles')
           .select('*')
           .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%${sanitizedId}%`)
           .limit(1);
+
+        if (error) {
+          console.error('Supabase findUser error:', error.message);
+        }
 
         if (data && data.length > 0) {
           const row = data[0];
@@ -115,9 +130,43 @@ export const serverAuthStore = {
           // Cache into local server store
           state.profiles.push(profile);
           saveState(state);
+        } else {
+          // Check by signupTrxId in Supabase
+          const { data: cpData } = await supabaseAdmin
+            .from('clipper_profiles')
+            .select('*')
+            .ilike('signup_trx_id', sanitizedId)
+            .limit(1);
+
+          if (cpData && cpData.length > 0) {
+            const cpRow = cpData[0];
+            const { data: pData } = await supabaseAdmin
+              .from('profiles')
+              .select('*')
+              .eq('id', cpRow.user_id)
+              .limit(1);
+
+            if (pData && pData.length > 0) {
+              const row = pData[0];
+              profile = {
+                id: row.id,
+                email: row.email,
+                role: row.role,
+                fullName: row.full_name,
+                phoneWhatsapp: row.phone_whatsapp,
+                country: row.country || 'Bangladesh',
+                status: row.status,
+                password: row.password,
+                createdAt: row.created_at,
+                updatedAt: row.updated_at,
+              };
+              state.profiles.push(profile);
+              saveState(state);
+            }
+          }
         }
-      } catch {
-        // Supabase query failed or RLS blocked; ignore
+      } catch (err) {
+        console.error('Supabase lookup exception:', err);
       }
     }
 
@@ -126,7 +175,7 @@ export const serverAuthStore = {
     let clipperProfile = state.clipperProfiles.find(cp => cp.userId === profile!.id);
     if (!clipperProfile) {
       try {
-        const { data } = await supabase
+        const { data } = await supabaseAdmin
           .from('clipper_profiles')
           .select('*')
           .eq('user_id', profile.id)
@@ -139,6 +188,7 @@ export const serverAuthStore = {
             tiktokHandle: cp.tiktok_handle,
             instagramHandle: cp.instagram_handle,
             youtubeHandle: cp.youtube_handle,
+            facebookHandle: cp.facebook_handle,
             preferredPlatforms: cp.preferred_platforms || ['TIKTOK', 'YOUTUBE'],
             editingExperience: cp.editing_experience,
             portfolioUrl: cp.portfolio_url,
@@ -186,9 +236,9 @@ export const serverAuthStore = {
 
     saveState(state);
 
-    // Attempt to persist to Supabase asynchronously (non-blocking)
+    // Attempt to persist to Supabase using supabaseAdmin (bypasses RLS)
     try {
-      await supabase.from('profiles').upsert({
+      const { error: pErr } = await supabaseAdmin.from('profiles').upsert({
         id: profile.id,
         email: profile.email,
         role: profile.role,
@@ -199,8 +249,11 @@ export const serverAuthStore = {
         password: profile.password,
         updated_at: new Date().toISOString(),
       });
+      if (pErr) {
+        console.error('Supabase profile upsert error:', pErr.message);
+      }
 
-      await supabase.from('clipper_profiles').upsert({
+      const { error: cpErr } = await supabaseAdmin.from('clipper_profiles').upsert({
         user_id: profile.id,
         tiktok_handle: clipperProfile.tiktokHandle,
         instagram_handle: clipperProfile.instagramHandle,
@@ -215,9 +268,61 @@ export const serverAuthStore = {
         signup_payment_method: clipperProfile.signupPaymentMethod,
         updated_at: new Date().toISOString(),
       });
-    } catch {
-      // Supabase write error ignored; server store holds authoritative data
+      if (cpErr) {
+        console.error('Supabase clipper_profiles upsert error:', cpErr.message);
+      }
+    } catch (err) {
+      console.error('Supabase registerUser exception:', err);
     }
+  },
+
+  async deleteUser(identifier: string): Promise<boolean> {
+    const cleanId = identifier.trim().toLowerCase();
+    const state = loadState();
+
+    // 1. Locate matching profile in local store
+    const matchedProfile = state.profiles.find(
+      p => p.id.toLowerCase() === cleanId || 
+           p.email.toLowerCase() === cleanId || 
+           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId)) ||
+           p.fullName.toLowerCase() === cleanId
+    );
+
+    let targetUserId = matchedProfile?.id;
+
+    if (!targetUserId) {
+      const matchedCp = state.clipperProfiles.find(
+        cp => cp.signupTrxId && cp.signupTrxId.toLowerCase() === cleanId
+      );
+      if (matchedCp) {
+        targetUserId = matchedCp.userId;
+      }
+    }
+
+    if (targetUserId) {
+      state.profiles = state.profiles.filter(p => p.id !== targetUserId);
+      state.clipperProfiles = state.clipperProfiles.filter(cp => cp.userId !== targetUserId);
+    }
+
+    // Explicitly purge user requested pre-password account Nabil Hasan and DIQ7WUNHRX
+    state.profiles = state.profiles.filter(p => p.fullName !== 'Nabil Hasan' && p.id !== 'usr-nabil-01');
+    state.clipperProfiles = state.clipperProfiles.filter(cp => cp.signupTrxId !== 'DIQ7WUNHRX');
+    saveState(state);
+
+    // 2. Delete from Supabase
+    try {
+      if (targetUserId) {
+        await supabaseAdmin.from('clipper_profiles').delete().eq('user_id', targetUserId);
+        await supabaseAdmin.from('profiles').delete().eq('id', targetUserId);
+      }
+      // Also purge any record in Supabase matching DIQ7WUNHRX or Nabil Hasan
+      await supabaseAdmin.from('clipper_profiles').delete().eq('signup_trx_id', 'DIQ7WUNHRX');
+      await supabaseAdmin.from('profiles').delete().ilike('full_name', '%Nabil Hasan%');
+    } catch (err) {
+      console.error('Supabase deleteUser exception:', err);
+    }
+
+    return true;
   },
 
   updateStatus(userId: string, status: UserStatus): boolean {

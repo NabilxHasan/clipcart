@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { Profile, ClipperProfile } from '@/lib/types/database';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
@@ -71,7 +72,8 @@ export async function POST(req: Request) {
 
     // 3. SECURITY: Role & Status MUST be strictly defined server-side.
     // Never trust client-supplied role or status to prevent privilege escalation.
-    const newUserId = `usr-${Date.now().toString(36)}${Math.random().toString(36).substring(2, 6)}`;
+    // PostgreSQL profiles.id requires standard UUID format
+    const newUserId = randomUUID();
     const now = new Date().toISOString();
 
     const sanitizedProfile: Profile = {

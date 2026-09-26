@@ -1,18 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Menu, X, PlaySquare, Shield, User, ArrowRight, MessageCircle, ChevronRight } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, X, PlaySquare, Shield, User, ArrowRight, MessageCircle, ChevronRight, LogOut } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../shared/WhatsAppPendingBadge';
 import { LanguageToggle } from '../shared/LanguageToggle';
 import { ThemeToggle } from '../shared/ThemeToggle';
 import { useLanguage } from '../../lib/i18n/context';
+import { getActiveUser, clearActiveUser } from '../../lib/auth/session';
+import { Profile } from '../../lib/types/database';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useLanguage();
+
+  useEffect(() => {
+    setCurrentUser(getActiveUser());
+  }, [pathname]);
+
+  const handleLogout = () => {
+    clearActiveUser();
+    setCurrentUser(null);
+    setIsOpen(false);
+    router.push('/register');
+  };
 
   const navLinks = [
     { href: '/campaigns', label: t.nav.campaigns },
@@ -76,14 +91,35 @@ export function Navbar() {
             {/* Language Toggle */}
             <LanguageToggle />
 
-            {/* Clipper Dashboard Button */}
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 rounded-xl border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_#09090b] transition-all whitespace-nowrap"
-            >
-              <User className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span className="hidden lg:inline">{t.nav.dashboard}</span>
-            </Link>
+            {/* Clipper Dashboard & Logout Controls */}
+            {currentUser ? (
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 rounded-xl border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all whitespace-nowrap"
+                >
+                  <User className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                  <span className="hidden lg:inline">{currentUser.fullName ? currentUser.fullName.split(' ')[0] : t.nav.dashboard}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  title={t.nav.logout}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white rounded-xl border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all whitespace-nowrap"
+                >
+                  <LogOut className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden xl:inline">{t.nav.logout}</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 rounded-xl border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[3px_3px_0px_#09090b] transition-all whitespace-nowrap"
+              >
+                <User className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                <span className="hidden lg:inline">{t.nav.dashboard}</span>
+              </Link>
+            )}
 
             {/* Brand Campaign Button -> WhatsApp Business direct redirect (Never overflows!) */}
             <a
@@ -195,8 +231,19 @@ export function Navbar() {
               className="w-full h-11 rounded-xl text-xs font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-750 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] flex items-center justify-center gap-2"
             >
               <User className="w-4 h-4 text-rose-600" />
-              <span>{t.nav.clipperWorkspace}</span>
+              <span>{currentUser ? `${currentUser.fullName || t.nav.dashboard} (${t.nav.dashboard})` : t.nav.clipperWorkspace}</span>
             </Link>
+
+            {currentUser && (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full h-11 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] flex items-center justify-center gap-2 transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>{t.nav.logout}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
