@@ -106,14 +106,40 @@ export const serverAuthStore = {
         const { data, error } = await supabaseAdmin
           .from('profiles')
           .select('*')
-          .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%${sanitizedId}%`)
+          .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%25${sanitizedId}%25`)
           .limit(1);
 
         if (error) {
           console.error('Supabase findUser error:', error.message);
-        }
-
-        if (data && data.length > 0) {
+          // Try simple email match as fallback
+          const { data: emailData } = await supabaseAdmin
+            .from('profiles')
+            .select('*')
+            .ilike('email', sanitizedId)
+            .limit(1);
+          if (emailData && emailData.length > 0) {
+            const row = emailData[0];
+            profile = {
+              id: row.id,
+              email: row.email,
+              role: row.role,
+              fullName: row.full_name,
+              phoneWhatsapp: row.phone_whatsapp,
+              country: row.country || 'Bangladesh',
+              status: row.status,
+              password: row.password,
+              createdAt: row.created_at,
+              updatedAt: row.updated_at,
+            };
+            const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
+            if (existIdx >= 0) {
+              state.profiles[existIdx] = profile;
+            } else {
+              state.profiles.push(profile);
+            }
+            saveState(state);
+          }
+        } else if (data && data.length > 0) {
           const row = data[0];
           profile = {
             id: row.id,
@@ -127,8 +153,13 @@ export const serverAuthStore = {
             createdAt: row.created_at,
             updatedAt: row.updated_at,
           };
-          // Cache into local server store
-          state.profiles.push(profile);
+          // Cache into local server store (update if exists)
+          const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
+          if (existIdx >= 0) {
+            state.profiles[existIdx] = profile;
+          } else {
+            state.profiles.push(profile);
+          }
           saveState(state);
         } else {
           // Check by signupTrxId in Supabase
@@ -160,13 +191,41 @@ export const serverAuthStore = {
                 createdAt: row.created_at,
                 updatedAt: row.updated_at,
               };
-              state.profiles.push(profile);
+              const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
+              if (existIdx >= 0) {
+                state.profiles[existIdx] = profile;
+              } else {
+                state.profiles.push(profile);
+              }
               saveState(state);
             }
           }
         }
       } catch (err) {
         console.error('Supabase lookup exception:', err);
+      }
+    }
+
+    // Always refresh status from Supabase so approval changes are live
+    if (profile) {
+      try {
+        const { data: freshData } = await supabaseAdmin
+          .from('profiles')
+          .select('status, password, full_name, role')
+          .eq('id', profile.id)
+          .limit(1);
+        if (freshData && freshData.length > 0) {
+          profile.status = freshData[0].status ?? profile.status;
+          profile.password = freshData[0].password ?? profile.password;
+          profile.fullName = freshData[0].full_name ?? profile.fullName;
+          profile.role = freshData[0].role ?? profile.role;
+          // Update local cache too
+          const idx = state.profiles.findIndex(p => p.id === profile!.id);
+          if (idx >= 0) state.profiles[idx] = { ...state.profiles[idx], ...profile };
+          saveState(state);
+        }
+      } catch {
+        // Non-fatal: use cached status
       }
     }
 
@@ -332,6 +391,17 @@ export const serverAuthStore = {
       p.status = status;
       p.updatedAt = new Date().toISOString();
       saveState(state);
+
+      // Persist to Supabase so status survives server restarts (fire-and-forget)
+      Promise.resolve(
+        supabaseAdmin
+          .from('profiles')
+          .update({ status, updated_at: p.updatedAt })
+          .eq('id', userId)
+      ).then(({ error }) => {
+        if (error) console.error('Supabase updateStatus error:', error.message);
+      }).catch((err: unknown) => console.error('Supabase updateStatus exception:', err));
+
       return true;
     }
     return false;

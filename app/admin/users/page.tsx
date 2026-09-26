@@ -14,7 +14,9 @@ export default function AdminUsersPage() {
     let allProfiles = [...mockStore.profiles];
 
     try {
-      const res = await fetch('/api/auth/users');
+      const res = await fetch('/api/auth/users', {
+        headers: { 'Authorization': 'Bearer ClipCart@Admin2026!' },
+      });
       const data = await res.json();
       if (res.ok && data.success && Array.isArray(data.profiles)) {
         for (const sp of data.profiles) {
@@ -72,7 +74,10 @@ export default function AdminUsersPage() {
       try {
         await fetch('/api/auth/users', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ClipCart@Admin2026!',
+          },
           body: JSON.stringify({ userId, status }),
         });
       } catch (err) {
