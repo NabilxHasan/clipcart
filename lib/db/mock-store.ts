@@ -127,7 +127,7 @@ class ClipBDStore {
         if (raw) {
           const data = JSON.parse(raw);
           if (Array.isArray(data.profiles) && data.profiles.length) {
-            this.profiles = (data.profiles as Profile[]).filter((p: Profile) => p.fullName !== 'Nabil Hasan' && p.id !== 'usr-nabil-01');
+            this.profiles = (data.profiles as Profile[]).filter((p: Profile) => p.id !== 'usr-nabil-01');
           }
           if (Array.isArray(data.clipperProfiles)) {
             this.clipperProfiles = (data.clipperProfiles as ClipperProfile[]).filter((cp: ClipperProfile) => cp.signupTrxId !== 'DIQ7WUNHRX');

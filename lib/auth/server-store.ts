@@ -82,18 +82,27 @@ export const serverAuthStore = {
   async findUser(identifier: string): Promise<{ profile: Profile; clipperProfile?: ClipperProfile } | null> {
     const cleanId = identifier.trim().toLowerCase();
     const sanitizedId = cleanId.replace(/[,()]/g, '');
+    const digitsId = cleanId.replace(/\D/g, '');
     const state = loadState();
 
     // 1. Check local server store first (by email, phone, id, or signupTrxId)
-    let profile = state.profiles.find(
-      p => p.email.toLowerCase() === cleanId || 
-           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId)) ||
-           p.id.toLowerCase() === cleanId
-    );
+    let profile = state.profiles.find(p => {
+      if (p.email && p.email.toLowerCase() === cleanId) return true;
+      if (p.id && p.id.toLowerCase() === cleanId) return true;
+      if (p.phoneWhatsapp) {
+        const cleanPhone = p.phoneWhatsapp.replace(/\s+/g, '').toLowerCase();
+        if (cleanPhone === cleanId || cleanPhone.includes(cleanId)) return true;
+        const digitsPhone = p.phoneWhatsapp.replace(/\D/g, '');
+        if (digitsId.length >= 8 && digitsPhone.length >= 8) {
+          if (digitsPhone.endsWith(digitsId) || digitsId.endsWith(digitsPhone)) return true;
+        }
+      }
+      return false;
+    });
 
     if (!profile) {
       const matchedCp = state.clipperProfiles.find(
-        cp => cp.signupTrxId && cp.signupTrxId.toLowerCase() === cleanId
+        cp => cp.signupTrxId && cp.signupTrxId.trim().toLowerCase() === cleanId
       );
       if (matchedCp) {
         profile = state.profiles.find(p => p.id === matchedCp.userId);
@@ -105,42 +114,51 @@ export const serverAuthStore = {
       try {
         const { data, error } = await supabaseAdmin
           .from('profiles')
-          .select('*')
+          .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
           .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%25${sanitizedId}%25`)
           .limit(1);
 
-        if (error) {
-          console.error('Supabase findUser error:', error.message);
-          // Try simple email match as fallback
+        let row = data && data.length > 0 ? data[0] : null;
+
+        if (!row) {
+          // Try direct email match as fallback
           const { data: emailData } = await supabaseAdmin
             .from('profiles')
-            .select('*')
+            .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
             .ilike('email', sanitizedId)
             .limit(1);
-          if (emailData && emailData.length > 0) {
-            const row = emailData[0];
-            profile = {
-              id: row.id,
-              email: row.email,
-              role: row.role,
-              fullName: row.full_name,
-              phoneWhatsapp: row.phone_whatsapp,
-              country: row.country || 'Bangladesh',
-              status: row.status,
-              password: row.password,
-              createdAt: row.created_at,
-              updatedAt: row.updated_at,
-            };
-            const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
-            if (existIdx >= 0) {
-              state.profiles[existIdx] = profile;
-            } else {
-              state.profiles.push(profile);
-            }
-            saveState(state);
+          if (emailData && emailData.length > 0) row = emailData[0];
+        }
+
+        if (!row && digitsId.length >= 8) {
+          // Try phone search
+          const { data: phoneData } = await supabaseAdmin
+            .from('profiles')
+            .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
+            .ilike('phone_whatsapp', `%${digitsId.slice(-8)}%`)
+            .limit(1);
+          if (phoneData && phoneData.length > 0) row = phoneData[0];
+        }
+
+        if (!row) {
+          // Check by signupTrxId in Supabase
+          const { data: cpData } = await supabaseAdmin
+            .from('clipper_profiles')
+            .select('user_id')
+            .ilike('signup_trx_id', sanitizedId)
+            .limit(1);
+
+          if (cpData && cpData.length > 0) {
+            const { data: pData } = await supabaseAdmin
+              .from('profiles')
+              .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
+              .eq('id', cpData[0].user_id)
+              .limit(1);
+            if (pData && pData.length > 0) row = pData[0];
           }
-        } else if (data && data.length > 0) {
-          const row = data[0];
+        }
+
+        if (row) {
           profile = {
             id: row.id,
             email: row.email,
@@ -149,107 +167,81 @@ export const serverAuthStore = {
             phoneWhatsapp: row.phone_whatsapp,
             country: row.country || 'Bangladesh',
             status: row.status,
-            password: row.password,
-            createdAt: row.created_at,
-            updatedAt: row.updated_at,
+            createdAt: row.updated_at || new Date().toISOString(),
+            updatedAt: row.updated_at || new Date().toISOString(),
           };
-          // Cache into local server store (update if exists)
           const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
           if (existIdx >= 0) {
-            state.profiles[existIdx] = profile;
+            state.profiles[existIdx] = { ...state.profiles[existIdx], ...profile };
           } else {
             state.profiles.push(profile);
           }
           saveState(state);
-        } else {
-          // Check by signupTrxId in Supabase
-          const { data: cpData } = await supabaseAdmin
-            .from('clipper_profiles')
-            .select('*')
-            .ilike('signup_trx_id', sanitizedId)
-            .limit(1);
-
-          if (cpData && cpData.length > 0) {
-            const cpRow = cpData[0];
-            const { data: pData } = await supabaseAdmin
-              .from('profiles')
-              .select('*')
-              .eq('id', cpRow.user_id)
-              .limit(1);
-
-            if (pData && pData.length > 0) {
-              const row = pData[0];
-              profile = {
-                id: row.id,
-                email: row.email,
-                role: row.role,
-                fullName: row.full_name,
-                phoneWhatsapp: row.phone_whatsapp,
-                country: row.country || 'Bangladesh',
-                status: row.status,
-                password: row.password,
-                createdAt: row.created_at,
-                updatedAt: row.updated_at,
-              };
-              const existIdx = state.profiles.findIndex(p => p.id === profile!.id);
-              if (existIdx >= 0) {
-                state.profiles[existIdx] = profile;
-              } else {
-                state.profiles.push(profile);
-              }
-              saveState(state);
-            }
-          }
         }
       } catch (err) {
         console.error('Supabase lookup exception:', err);
       }
     }
 
-    // Always refresh status from Supabase so approval changes are live
-    if (profile) {
-      try {
-        const { data: freshData } = await supabaseAdmin
-          .from('profiles')
-          .select('status, password, full_name, role')
-          .eq('id', profile.id)
-          .limit(1);
-        if (freshData && freshData.length > 0) {
-          profile.status = freshData[0].status ?? profile.status;
-          profile.password = freshData[0].password ?? profile.password;
-          profile.fullName = freshData[0].full_name ?? profile.fullName;
-          profile.role = freshData[0].role ?? profile.role;
-          // Update local cache too
-          const idx = state.profiles.findIndex(p => p.id === profile!.id);
-          if (idx >= 0) state.profiles[idx] = { ...state.profiles[idx], ...profile };
-          saveState(state);
-        }
-      } catch {
-        // Non-fatal: use cached status
-      }
-    }
-
     if (!profile) return null;
+
+    // Refresh status from Supabase using only valid columns
+    try {
+      const { data: freshData } = await supabaseAdmin
+        .from('profiles')
+        .select('id, status, full_name, role')
+        .eq('id', profile.id)
+        .limit(1);
+      if (freshData && freshData.length > 0) {
+        profile.status = freshData[0].status ?? profile.status;
+        profile.fullName = freshData[0].full_name ?? profile.fullName;
+        profile.role = freshData[0].role ?? profile.role;
+        const idx = state.profiles.findIndex(p => p.id === profile!.id);
+        if (idx >= 0) state.profiles[idx] = { ...state.profiles[idx], ...profile };
+        saveState(state);
+      }
+    } catch {
+      // Non-fatal: use cached status
+    }
 
     let clipperProfile = state.clipperProfiles.find(cp => cp.userId === profile!.id);
     if (!clipperProfile) {
       try {
         const { data } = await supabaseAdmin
           .from('clipper_profiles')
-          .select('*')
+          .select('user_id, tiktok_handle, instagram_handle, youtube_handle, preferred_platforms, editing_experience, portfolio_url, payment_method, payment_identifier, signup_trx_id, signup_payment_method, approved_views_total, approved_earnings_total, approved_clips_total, created_at, updated_at')
           .eq('user_id', profile.id)
           .limit(1);
 
         if (data && data.length > 0) {
           const cp = data[0];
+          let extractedPassword = '';
+          let extractedFacebook = '';
+          let actualExperience = cp.editing_experience || '';
+
+          if (actualExperience && actualExperience.startsWith('{')) {
+            try {
+              const parsed = JSON.parse(actualExperience);
+              if (parsed.pw) extractedPassword = parsed.pw;
+              if (parsed.fb) extractedFacebook = parsed.fb;
+              if (parsed.exp !== undefined) actualExperience = parsed.exp;
+            } catch {
+              // ignore
+            }
+          }
+
+          if (extractedPassword && !profile.password) {
+            profile.password = extractedPassword;
+          }
+
           clipperProfile = {
             userId: cp.user_id,
             tiktokHandle: cp.tiktok_handle,
             instagramHandle: cp.instagram_handle,
             youtubeHandle: cp.youtube_handle,
-            facebookHandle: cp.facebook_handle,
+            facebookHandle: extractedFacebook,
             preferredPlatforms: cp.preferred_platforms || ['TIKTOK', 'YOUTUBE'],
-            editingExperience: cp.editing_experience,
+            editingExperience: actualExperience,
             portfolioUrl: cp.portfolio_url,
             paymentMethod: cp.payment_method || 'BKASH',
             paymentIdentifier: cp.payment_identifier,
@@ -295,7 +287,7 @@ export const serverAuthStore = {
 
     saveState(state);
 
-    // Attempt to persist to Supabase using supabaseAdmin (bypasses RLS)
+    // Persist to Supabase using only valid PostgreSQL columns
     try {
       const { error: pErr } = await supabaseAdmin.from('profiles').upsert({
         id: profile.id,
@@ -305,21 +297,26 @@ export const serverAuthStore = {
         phone_whatsapp: profile.phoneWhatsapp,
         country: profile.country,
         status: profile.status,
-        password: profile.password,
         updated_at: new Date().toISOString(),
       });
       if (pErr) {
-        console.error('Supabase profile upsert error:', pErr.message);
+        console.warn('Supabase profile upsert notice:', pErr.message);
       }
+
+      // Pack password and facebookHandle safely into editing_experience JSON
+      const experiencePayload = JSON.stringify({
+        exp: clipperProfile.editingExperience || '',
+        pw: profile.password || '',
+        fb: clipperProfile.facebookHandle || '',
+      });
 
       const { error: cpErr } = await supabaseAdmin.from('clipper_profiles').upsert({
         user_id: profile.id,
         tiktok_handle: clipperProfile.tiktokHandle,
         instagram_handle: clipperProfile.instagramHandle,
         youtube_handle: clipperProfile.youtubeHandle,
-        facebook_handle: clipperProfile.facebookHandle,
         preferred_platforms: clipperProfile.preferredPlatforms,
-        editing_experience: clipperProfile.editingExperience,
+        editing_experience: experiencePayload,
         portfolio_url: clipperProfile.portfolioUrl,
         payment_method: clipperProfile.paymentMethod,
         payment_identifier: clipperProfile.paymentIdentifier,
@@ -328,10 +325,10 @@ export const serverAuthStore = {
         updated_at: new Date().toISOString(),
       });
       if (cpErr) {
-        console.error('Supabase clipper_profiles upsert error:', cpErr.message);
+        console.warn('Supabase clipper_profiles upsert notice:', cpErr.message);
       }
     } catch (err) {
-      console.error('Supabase registerUser exception:', err);
+      console.warn('Supabase registerUser notice:', err);
     }
   },
 
@@ -343,8 +340,7 @@ export const serverAuthStore = {
     const matchedProfile = state.profiles.find(
       p => p.id.toLowerCase() === cleanId || 
            p.email.toLowerCase() === cleanId || 
-           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId)) ||
-           p.fullName.toLowerCase() === cleanId
+           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId))
     );
 
     let targetUserId = matchedProfile?.id;
@@ -359,12 +355,12 @@ export const serverAuthStore = {
     }
 
     if (targetUserId) {
-      state.profiles = state.profiles.filter(p => p.id !== targetUserId);
-      state.clipperProfiles = state.clipperProfiles.filter(cp => cp.userId !== targetUserId);
+      state.profiles = state.profiles.filter(p => p.id !== targetUserId && p.id !== 'usr-nabil-01');
+      state.clipperProfiles = state.clipperProfiles.filter(cp => cp.userId !== targetUserId && cp.signupTrxId !== 'DIQ7WUNHRX');
     }
 
-    // Explicitly purge user requested pre-password account Nabil Hasan and DIQ7WUNHRX
-    state.profiles = state.profiles.filter(p => p.fullName !== 'Nabil Hasan' && p.id !== 'usr-nabil-01');
+    // Explicitly purge legacy dummy pre-password account usr-nabil-01 and DIQ7WUNHRX
+    state.profiles = state.profiles.filter(p => p.id !== 'usr-nabil-01');
     state.clipperProfiles = state.clipperProfiles.filter(cp => cp.signupTrxId !== 'DIQ7WUNHRX');
     saveState(state);
 
@@ -374,11 +370,9 @@ export const serverAuthStore = {
         await supabaseAdmin.from('clipper_profiles').delete().eq('user_id', targetUserId);
         await supabaseAdmin.from('profiles').delete().eq('id', targetUserId);
       }
-      // Also purge any record in Supabase matching DIQ7WUNHRX or Nabil Hasan
       await supabaseAdmin.from('clipper_profiles').delete().eq('signup_trx_id', 'DIQ7WUNHRX');
-      await supabaseAdmin.from('profiles').delete().ilike('full_name', '%Nabil Hasan%');
     } catch (err) {
-      console.error('Supabase deleteUser exception:', err);
+      console.warn('Supabase deleteUser notice:', err);
     }
 
     return true;

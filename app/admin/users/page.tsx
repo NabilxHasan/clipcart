@@ -71,6 +71,22 @@ export default function AdminUsersPage() {
       setFeedback(`Updated status for ${p.fullName} to ${status}`);
       setProfiles([...mockStore.profiles]);
 
+      // If this user is currently the active session in this browser, update active user too
+      if (typeof window !== 'undefined') {
+        try {
+          const rawActive = localStorage.getItem('clipcart_active_user');
+          if (rawActive) {
+            const active = JSON.parse(rawActive);
+            if (active.id === userId || active.email?.toLowerCase() === p.email.toLowerCase()) {
+              active.status = status;
+              localStorage.setItem('clipcart_active_user', JSON.stringify(active));
+            }
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
       try {
         await fetch('/api/auth/users', {
           method: 'POST',

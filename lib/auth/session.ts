@@ -12,14 +12,10 @@ export function getActiveUser(): Profile | null {
     if (!raw) return null;
     const user = JSON.parse(raw) as Profile;
 
-    // Safety check: Purge user-requested deleted test account
-    if (
-      user.fullName === 'Nabil Hasan' || 
-      user.id === 'usr-nabil-01' || 
-      user.email?.toLowerCase().includes('nabil')
-    ) {
+    // Safety check: Purge legacy pre-password demo account ID
+    if (user.id === 'usr-nabil-01') {
       localStorage.removeItem(ACTIVE_USER_KEY);
-      mockStore.profiles = mockStore.profiles.filter(p => p.fullName !== 'Nabil Hasan');
+      mockStore.profiles = mockStore.profiles.filter(p => p.id !== 'usr-nabil-01');
       mockStore.clipperProfiles = mockStore.clipperProfiles.filter(cp => cp.signupTrxId !== 'DIQ7WUNHRX');
       mockStore.saveToStorage();
       return null;
@@ -73,10 +69,10 @@ export function deleteLocalUser(userIdOrTrxId?: string): void {
 
     // Clean mockStore
     if (targetId) {
-      mockStore.profiles = mockStore.profiles.filter(p => p.id !== targetId && p.fullName !== 'Nabil Hasan');
+      mockStore.profiles = mockStore.profiles.filter(p => p.id !== targetId && p.id !== 'usr-nabil-01');
       mockStore.clipperProfiles = mockStore.clipperProfiles.filter(cp => cp.userId !== targetId && cp.signupTrxId !== 'DIQ7WUNHRX');
     } else {
-      mockStore.profiles = mockStore.profiles.filter(p => p.fullName !== 'Nabil Hasan' && (p.role === 'SUPER_ADMIN' || p.role === 'ADMIN'));
+      mockStore.profiles = mockStore.profiles.filter(p => p.id !== 'usr-nabil-01' && (p.role === 'SUPER_ADMIN' || p.role === 'ADMIN'));
       mockStore.clipperProfiles = mockStore.clipperProfiles.filter(cp => cp.signupTrxId !== 'DIQ7WUNHRX');
     }
     mockStore.saveToStorage();
