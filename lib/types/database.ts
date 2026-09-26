@@ -4,7 +4,7 @@ export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'MODERATOR' | 'SUPPORT' | 'CLIE
 export type UserStatus = 'PENDING' | 'APPROVED' | 'SUSPENDED' | 'BANNED';
 export type CampaignStatus = 'DRAFT' | 'PENDING_PAYMENT' | 'SCHEDULED' | 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'CANCELLED';
 export type PayoutType = 'CPM' | 'FIXED';
-export type PlatformType = 'TIKTOK' | 'INSTAGRAM' | 'YOUTUBE';
+export type PlatformType = 'TIKTOK' | 'INSTAGRAM' | 'YOUTUBE' | 'FACEBOOK';
 export type SubmissionStatus = 'PENDING_AI_REVIEW' | 'PENDING_HUMAN_REVIEW' | 'APPROVED' | 'REJECTED' | 'FLAGGED' | 'WITHDRAWN';
 export type ReviewDecision = 'APPROVED' | 'REJECTED' | 'REQUEST_CHANGES';
 export type PaymentMethod = 'BKASH' | 'NAGAD' | 'BANK' | 'CASH' | 'OTHER';
@@ -38,6 +38,7 @@ export interface ClipperProfile {
   tiktokHandle?: string;
   instagramHandle?: string;
   youtubeHandle?: string;
+  facebookHandle?: string;
   preferredPlatforms: PlatformType[];
   editingExperience?: string;
   portfolioUrl?: string;

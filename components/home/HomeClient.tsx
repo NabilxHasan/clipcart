@@ -21,7 +21,7 @@ import { StatusBadge } from '../shared/StatusBadge';
 import { useLanguage } from '../../lib/i18n/context';
 
 export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] }) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   // Campaign Calculator State (Flexible BD Market Tiers)
   const [calcTier, setCalcTier] = useState<'1000' | '2500' | '5000' | 'custom'>('1000');
@@ -83,13 +83,25 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
           {/* Floating Feature Stickers (FutureMakers aesthetic) */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3.5 pt-1">
             <span className="neo-sticker bg-white dark:bg-zinc-800 text-zinc-950 dark:text-zinc-100 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] rotate-[-1.5deg]">
-              🔥 ৳1,000 Micro-Campaigns (3 Days)
+              {lang === 'bn' ? (
+                <>🔥 <span className="bn-amount">৳ ১,০০০</span> মাইক্রো-ক্যাম্পেইন (৩ দিন)</>
+              ) : (
+                '🔥 ৳1,000 Micro-Campaigns (3 Days)'
+              )}
             </span>
             <span className="neo-sticker bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] rotate-[1.5deg]">
-              💰 ৳50 Min Cashout • 0% Clipper Fee
+              {lang === 'bn' ? (
+                <>💰 <span className="bn-amount">৳ ৫০</span> মিনিমাম ক্যাশআউট • ০% ফি</>
+              ) : (
+                '💰 ৳50 Min Cashout • 0% Clipper Fee'
+              )}
             </span>
             <span className="neo-sticker bg-zinc-950 dark:bg-zinc-850 text-white border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] rotate-[-1deg]">
-              🛡️ 10% Brand Curation Fee
+              {lang === 'bn' ? (
+                <>🛡️ <span className="bn-amount">১০%</span> প্ল্যাটফর্ম কিউরেশন ফি</>
+              ) : (
+                '🛡️ 10% Brand Curation Fee'
+              )}
             </span>
             <a 
               href="https://chat.whatsapp.com/LUK6WkzD9KZ2fpuZgy0pan"
@@ -153,26 +165,26 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
       <div className="border-y-[2.5px] border-zinc-950 bg-zinc-950 text-white py-3.5 overflow-hidden shadow-[0px_4px_0px_#e11d48]">
         <div className="flex items-center gap-8 whitespace-nowrap animate-[fmMarquee_25s_linear_infinite] font-['Unbounded'] font-black text-xs uppercase tracking-wider">
           <span className="flex items-center gap-2 text-rose-500">
-            <Flame className="w-4 h-4" /> NO SCRIPTED ADS
+            <Flame className="w-4 h-4" /> {lang === 'bn' ? 'কোনো ফেক অ্যাড নয়' : 'NO SCRIPTED ADS'}
           </span>
           <span className="text-zinc-600">✦</span>
-          <span>MICRO-CAMPAIGNS STARTING ৳1,000 FOR 3 DAYS</span>
+          <span>{lang === 'bn' ? 'মাইক্রো-ক্যাম্পেইন শুরু মাত্র ৳ ১,০০০ টাকা থেকে (৩ দিন)' : 'MICRO-CAMPAIGNS STARTING ৳1,000 FOR 3 DAYS'}</span>
           <span className="text-zinc-600">✦</span>
-          <span className="text-emerald-400">৳50 CPM RATE (৳50 PER 1K VIEWS)</span>
+          <span className="text-emerald-400">{lang === 'bn' ? '৳ ৫০ CPM রেট (প্রতি ১,০০০ ভিউতে)' : '৳50 CPM RATE (৳50 PER 1K VIEWS)'}</span>
           <span className="text-zinc-600">✦</span>
-          <span>10% PLATFORM CURATION & AUDIT FEE</span>
+          <span>{lang === 'bn' ? '১০% প্ল্যাটফর্ম কিউরেশন ও অডিট ফি' : '10% PLATFORM CURATION & AUDIT FEE'}</span>
           <span className="text-zinc-600">✦</span>
-          <span className="text-rose-400">0% FEES FOR CLIPPERS (৳50 MIN CASHOUT)</span>
+          <span className="text-rose-400">{lang === 'bn' ? 'ক্লিপারদের জন্য ০% ফি (সর্বনিম্ন ৫০ টাকা ক্যাশ-আউট)' : '0% FEES FOR CLIPPERS (৳50 MIN CASHOUT)'}</span>
           <span className="text-zinc-600">✦</span>
-          <span>MANDATORY WHATSAPP CLIPPER COMMUNITY</span>
+          <span>{lang === 'bn' ? 'বাধ্যতামূলক হোয়াটসঅ্যাপ ক্লিপার কমিউনিটি' : 'MANDATORY WHATSAPP CLIPPER COMMUNITY'}</span>
           <span className="text-zinc-600">✦</span>
           <span className="flex items-center gap-2 text-rose-500">
-            <Flame className="w-4 h-4" /> NO SCRIPTED ADS
+            <Flame className="w-4 h-4" /> {lang === 'bn' ? 'কোনো ফেক অ্যাড নয়' : 'NO SCRIPTED ADS'}
           </span>
           <span className="text-zinc-600">✦</span>
-          <span>MICRO-CAMPAIGNS STARTING ৳1,000 FOR 3 DAYS</span>
+          <span>{lang === 'bn' ? 'মাইক্রো-ক্যাম্পেইন শুরু মাত্র ৳ ১,০০০ টাকা থেকে (৩ দিন)' : 'MICRO-CAMPAIGNS STARTING ৳1,000 FOR 3 DAYS'}</span>
           <span className="text-zinc-600">✦</span>
-          <span className="text-emerald-400">৳50 CPM RATE</span>
+          <span className="text-emerald-400">{lang === 'bn' ? '৳ ৫০ CPM রেট' : '৳50 CPM RATE'}</span>
         </div>
       </div>
 

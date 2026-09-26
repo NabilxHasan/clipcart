@@ -24,7 +24,7 @@ export default function AdminCampaignsPage() {
   const [minViews, setMinViews] = useState<number>(2000);
   const [sourceUrl, setSourceUrl] = useState('');
   const [exampleUrl, setExampleUrl] = useState('');
-  const [platforms, setPlatforms] = useState<PlatformType[]>(['TIKTOK', 'INSTAGRAM', 'YOUTUBE']);
+  const [platforms, setPlatforms] = useState<PlatformType[]>(['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK']);
   const [rulesText, setRulesText] = useState('Must include animated captions\nVertical 9:16 format between 20-58 seconds\nTag @BrandName');
   const [restrictionsText, setRestrictionsText] = useState('No copyrighted audio that mutes playback\nNo altered robot voices');
 
@@ -354,6 +354,32 @@ export default function AdminCampaignsPage() {
               <span className="text-[10px] text-zinc-500 font-medium">
                 High-resolution raw video is kept on Google Drive to maintain database efficiency.
               </span>
+            </div>
+
+            <div className="sm:col-span-2 space-y-1.5">
+              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Target Platforms</label>
+              <div className="flex flex-wrap gap-2 font-mono">
+                {(['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK'] as PlatformType[]).map(p => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => {
+                      if (platforms.includes(p)) {
+                        if (platforms.length > 1) setPlatforms(platforms.filter(item => item !== p));
+                      } else {
+                        setPlatforms([...platforms, p]);
+                      }
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl border-2 text-xs font-bold transition-all cursor-pointer ${
+                      platforms.includes(p)
+                        ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]'
+                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-1.5">

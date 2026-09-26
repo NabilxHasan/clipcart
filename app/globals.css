@@ -211,6 +211,80 @@ html, body {
   background-color: rgba(245, 158, 11, 0.14) !important;
 }
 
+/* Dark Mode Form Inputs & Containers - Prevents White-on-White */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+  background-color: #16171f !important;
+  color: #f4f4f5 !important;
+  border-color: #2e303d !important;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  background-color: #1c1d27 !important;
+  color: #ffffff !important;
+  border-color: #e11d48 !important;
+}
+
+.dark select option {
+  background-color: #14151a !important;
+  color: #f4f4f5 !important;
+}
+
+/* Ensure inner white boxes adapt in dark mode */
+.dark .neo-box .bg-white,
+.dark .neo-box-lg .bg-white {
+  background-color: #181922 !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+.dark .neo-sticker.bg-white {
+  background-color: #1e1f28 !important;
+  color: #f4f4f5 !important;
+  border-color: #2e303d !important;
+}
+
+/* ============================================================
+   Bengali (Bangla) Typography & Numeral Rendering Overrides
+   Prevents glyph truncation/clipping of Bengali digits (১,০,৫)
+   and ensures Hind Siliguri glyph boundaries remain unclipped.
+   ============================================================ */
+html[lang="bn"],
+html[lang="bn"] body {
+  font-family: 'Hind Siliguri', 'Space Grotesk', system-ui, -apple-system, sans-serif !important;
+}
+
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3,
+html[lang="bn"] h4,
+html[lang="bn"] h5,
+html[lang="bn"] h6,
+html[lang="bn"] [class*="font-['Unbounded']"],
+html[lang="bn"] [class*="font-['Space_Grotesk']"] {
+  font-family: 'Hind Siliguri', system-ui, sans-serif !important;
+  letter-spacing: normal !important;
+  line-height: 1.35 !important;
+}
+
+html[lang="bn"] .tracking-tight,
+html[lang="bn"] .tracking-tighter,
+html[lang="bn"] [class*="tracking-"] {
+  letter-spacing: normal !important;
+}
+
+/* Bengali numeral safe spacing utility */
+.bn-num, .bn-amount {
+  display: inline-block;
+  padding: 0 2px;
+  overflow: visible !important;
+  letter-spacing: 0.02em !important;
+}
+
+
 /* Neo-Brutalist Interactive Buttons */
 .neo-btn {
   display: inline-flex;

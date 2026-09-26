@@ -12,7 +12,7 @@ export default function ClientRequestPage() {
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [email, setEmail] = useState('');
   const [campaignObjective, setCampaignObjective] = useState('');
-  const [platforms, setPlatforms] = useState<PlatformType[]>(['TIKTOK', 'INSTAGRAM', 'YOUTUBE']);
+  const [platforms, setPlatforms] = useState<PlatformType[]>(['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK']);
   
   // Flexible BD Budgets
   const [budgetTier, setBudgetTier] = useState<'1000' | '2500' | '5000' | 'custom'>('1000');
@@ -383,17 +383,17 @@ Hi ClipCart Team! I want to launch this campaign. Please confirm review and admi
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-zinc-800 font-bold block font-['Space_Grotesk']">Target Platforms</label>
-                <div className="flex gap-2 font-['JetBrains_Mono']">
-                  {(['TIKTOK', 'INSTAGRAM', 'YOUTUBE'] as PlatformType[]).map(p => (
+                <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">Target Platforms</label>
+                <div className="flex flex-wrap gap-2 font-['JetBrains_Mono']">
+                  {(['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK'] as PlatformType[]).map(p => (
                     <button
                       key={p}
                       type="button"
                       onClick={() => togglePlatform(p)}
-                      className={`px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition-colors ${
+                      className={`px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition-colors cursor-pointer ${
                         platforms.includes(p)
-                          ? 'bg-rose-600 text-white border-zinc-950 shadow-[2px_2px_0px_#09090b]'
-                          : 'bg-zinc-100 text-zinc-700 border-zinc-300 hover:bg-zinc-200'
+                          ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]'
+                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                       }`}
                     >
                       {p}

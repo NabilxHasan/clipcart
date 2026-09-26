@@ -43,6 +43,12 @@ export class AiModeratorService {
           }
           return { isValid: true, normalizedUrl: trimmed };
         }
+        case 'FACEBOOK': {
+          if (!hostname.includes('facebook.com') && !hostname.includes('fb.watch') && !hostname.includes('fb.com')) {
+            return { isValid: false, normalizedUrl: trimmed, error: 'URL must be a valid Facebook Reel or video link (facebook.com/reel/... or fb.watch/...)' };
+          }
+          return { isValid: true, normalizedUrl: trimmed };
+        }
         default:
           return { isValid: false, normalizedUrl: trimmed, error: 'Unsupported platform' };
       }

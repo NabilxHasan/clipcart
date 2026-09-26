@@ -129,7 +129,7 @@ export default function CampaignDetailPage() {
       <div>
         <Link
           href="/campaigns"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border-2 border-zinc-950 text-xs font-mono font-bold text-zinc-900 shadow-[2px_2px_0px_#09090b] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Marketplace</span>
@@ -280,17 +280,17 @@ export default function CampaignDetailPage() {
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 {/* Platform select */}
                 <div className="space-y-1.5">
-                  <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Platform</label>
-                  <div className="grid grid-cols-3 gap-2 font-mono">
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">Platform</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
                     {campaign.platforms.map(p => (
                       <button
                         key={p}
                         type="button"
                         onClick={() => setPlatform(p)}
-                        className={`py-1.5 rounded-xl text-xs font-bold transition-all border-2 border-zinc-950 ${
+                        className={`py-1.5 px-2 rounded-xl text-xs font-bold transition-all border-2 border-zinc-950 dark:border-zinc-700 cursor-pointer ${
                           platform === p
-                            ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#09090b]'
-                            : 'bg-zinc-100 text-zinc-800 hover:bg-zinc-200'
+                            ? 'bg-rose-600 text-white shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]'
+                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                         }`}
                       >
                         {p}
@@ -301,7 +301,7 @@ export default function CampaignDetailPage() {
 
                 {/* Post URL */}
                 <div className="space-y-1.5">
-                  <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Post URL</label>
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">Post URL</label>
                   <input
                     type="url"
                     required
@@ -310,35 +310,37 @@ export default function CampaignDetailPage() {
                         ? 'https://www.tiktok.com/@user/video/...'
                         : platform === 'INSTAGRAM'
                         ? 'https://www.instagram.com/reel/...'
+                        : platform === 'FACEBOOK'
+                        ? 'https://www.facebook.com/reel/... or https://fb.watch/...'
                         : 'https://youtube.com/shorts/...'
                     }
                     value={postUrl}
                     onChange={(e) => setPostUrl(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono text-xs shadow-[2px_2px_0px_#09090b]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
                   />
                 </div>
 
                 {/* Caption / Hook used */}
                 <div className="space-y-1.5">
-                  <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Caption / Hook (Optional)</label>
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">Caption / Hook (Optional)</label>
                   <input
                     type="text"
                     placeholder="e.g. Why 90% of Dhaka startups fail in year one"
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
                   />
                 </div>
 
                 {/* Notes for Moderator */}
                 <div className="space-y-1.5">
-                  <label className="text-zinc-800 font-bold font-mono text-[11px] block uppercase">Notes for Moderator (Optional)</label>
+                  <label className="text-zinc-800 dark:text-zinc-200 font-bold font-mono text-[11px] block uppercase">Notes for Moderator (Optional)</label>
                   <textarea
                     rows={2}
                     placeholder="Timestamp in source footage, specific angles, etc."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 border-2 border-zinc-950 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
                   />
                 </div>
 
