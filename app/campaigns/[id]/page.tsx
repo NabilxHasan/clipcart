@@ -172,6 +172,16 @@ export default function CampaignDetailPage() {
           <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]">
             <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold block uppercase">{t.campaigns.budgetLeft}</span>
             <span className="text-base font-black text-zinc-950 dark:text-zinc-50">৳{campaign.remainingBudget.toLocaleString()}</span>
+            {/* Budget spend progress bar */}
+            <div className="mt-1.5 w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-600 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-rose-500"
+                style={{ width: `${Math.min(Math.round(((campaign.totalBudget - campaign.remainingBudget) / campaign.totalBudget) * 100), 100)}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
+              {Math.round(((campaign.totalBudget - campaign.remainingBudget) / campaign.totalBudget) * 100)}% spent
+            </span>
           </div>
           <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]">
             <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold block uppercase">{t.campaigns.maxPerClip}</span>
@@ -180,10 +190,25 @@ export default function CampaignDetailPage() {
             </span>
           </div>
           <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]">
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold block uppercase">Min Views</span>
-            <span className="text-base font-black text-zinc-900 dark:text-zinc-100">
-              {campaign.minViews > 0 ? `${campaign.minViews.toLocaleString()} views` : '1 view'}
-            </span>
+            {(() => {
+              const endDate = new Date(campaign.endDate);
+              const daysLeft = Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              return (
+                <>
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold block uppercase">Ends On</span>
+                  <span className="text-base font-black text-zinc-900 dark:text-zinc-100">
+                    {endDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                  </span>
+                  <span className={`text-[10px] font-bold font-mono block ${
+                    daysLeft <= 2 ? 'text-rose-600 dark:text-rose-400' :
+                    daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' :
+                    'text-emerald-600 dark:text-emerald-400'
+                  }`}>
+                    {daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}
+                  </span>
+                </>
+              );
+            })()}
           </div>
         </div>
 

@@ -92,7 +92,21 @@ export class ClipBDRepository {
   }
 
   // --- CAMPAIGNS ---
+  static autoExpireCampaigns(): void {
+    const now = new Date();
+    let changed = false;
+    for (const c of mockStore.campaigns) {
+      if (c.status === 'ACTIVE' && new Date(c.endDate) < now) {
+        c.status = 'COMPLETED';
+        c.updatedAt = now.toISOString();
+        changed = true;
+      }
+    }
+    if (changed) mockStore.saveToStorage();
+  }
+
   static async getCampaigns(statusFilter?: string): Promise<Campaign[]> {
+    this.autoExpireCampaigns();
     if (statusFilter && statusFilter !== 'ALL') {
       return mockStore.campaigns.filter(c => c.status === statusFilter);
     }
@@ -100,10 +114,12 @@ export class ClipBDRepository {
   }
 
   static async getActiveCampaigns(): Promise<Campaign[]> {
+    this.autoExpireCampaigns();
     return mockStore.campaigns.filter(c => c.status === 'ACTIVE');
   }
 
   static async getCampaignBySlugOrId(identifier: string): Promise<Campaign | null> {
+    this.autoExpireCampaigns();
     return mockStore.campaigns.find(c => c.id === identifier || c.slug === identifier) || null;
   }
 

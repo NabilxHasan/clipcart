@@ -22,6 +22,7 @@ export default function AdminCampaignsPage() {
   const [cpmRate, setCpmRate] = useState<number>(100);
   const [maxPayoutPerClip, setMaxPayoutPerClip] = useState<number>(5000);
   const [minViews, setMinViews] = useState<number>(2000);
+  const [durationDays, setDurationDays] = useState<number>(30);
   const [sourceUrl, setSourceUrl] = useState('');
   const [exampleUrl, setExampleUrl] = useState('');
   const [platforms, setPlatforms] = useState<PlatformType[]>(['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK']);
@@ -72,7 +73,7 @@ export default function AdminCampaignsPage() {
         maxPayoutPerClip: Number(maxPayoutPerClip),
         minViews: Number(minViews),
         startDate: new Date().toISOString(),
-        endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        endDate: new Date(Date.now() + Number(durationDays) * 24 * 60 * 60 * 1000).toISOString(),
         platforms,
         rules,
         restrictions,
@@ -341,6 +342,22 @@ export default function AdminCampaignsPage() {
               />
             </div>
 
+            <div className="space-y-1.5">
+              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Campaign Duration (Days)</label>
+              <input
+                type="number"
+                min={1}
+                max={365}
+                required
+                value={durationDays}
+                onChange={(e) => setDurationDays(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono font-bold text-xs focus:outline-none"
+              />
+              <span className="text-[10px] text-zinc-500 font-medium">
+                Campaign ends {durationDays} day{durationDays !== 1 ? 's' : ''} from activation. After end date, status will show as COMPLETED.
+              </span>
+            </div>
+
             <div className="sm:col-span-2 space-y-1.5">
               <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Google Drive Master Footage Link</label>
               <input
@@ -441,15 +458,22 @@ export default function AdminCampaignsPage() {
             <thead className="border-b-2.5 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-mono text-[11px] uppercase font-bold">
               <tr>
                 <th className="py-3 px-4">Title & Client</th>
-                <th className="py-3 px-4 font-mono">Budget</th>
+                <th className="py-3 px-4 font-mono">Budget / Remaining</th>
                 <th className="py-3 px-4 font-mono">CPM</th>
+                <th className="py-3 px-4">End Date</th>
                 <th className="py-3 px-4">Platforms</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-zinc-200 dark:divide-zinc-800 bg-white dark:bg-[#14151a]">
-              {campaigns.map(c => (
+              {campaigns.map(c => {
+                const endDate = new Date(c.endDate);
+                const now = new Date();
+                const daysLeft = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                const budgetUsed = c.totalBudget - c.remainingBudget;
+                const budgetPct = Math.round((budgetUsed / c.totalBudget) * 100);
+                return (
                 <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors">
                   <td className="py-3 px-4 max-w-xs">
                     <div className="font-bold text-zinc-950 dark:text-white truncate font-['Space_Grotesk'] text-sm">{c.title}</div>
@@ -457,10 +481,31 @@ export default function AdminCampaignsPage() {
                   </td>
                   <td className="py-3 px-4 font-mono">
                     <div className="text-zinc-950 dark:text-white font-bold">৳{c.totalBudget.toLocaleString()}</div>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Rem: ৳{c.remainingBudget.toLocaleString()}</span>
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Rem: ৳{c.remainingBudget.toLocaleString()}</div>
+                    <div className="mt-1 w-full h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-rose-500"
+                        style={{ width: `${Math.min(budgetPct, 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-[10px] text-zinc-400 font-mono mt-0.5">{budgetPct}% spent</div>
                   </td>
                   <td className="py-3 px-4 font-mono font-bold text-zinc-950 dark:text-white">
                     ৳{c.cpmRate}/1k
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                      {endDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </div>
+                    {c.status === 'ACTIVE' && (
+                      <span className={`text-[10px] font-bold font-mono ${
+                        daysLeft <= 2 ? 'text-rose-600 dark:text-rose-400' :
+                        daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' :
+                        'text-emerald-600 dark:text-emerald-400'
+                      }`}>
+                        {daysLeft > 0 ? `${daysLeft}d left` : 'Expired'}
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex gap-1 font-mono text-[10px]">
@@ -496,7 +541,8 @@ export default function AdminCampaignsPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
