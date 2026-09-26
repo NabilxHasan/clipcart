@@ -1,8 +1,25 @@
 import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
+import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    // Rate limit check: max 5 login attempts per minute per IP
+    const limit = checkRateLimit(`login:${clientIp}`, 5, 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Too many login attempts. Please wait ${limit.retryAfterSec} seconds before trying again.` 
+        },
+        { 
+          status: 429,
+          headers: { 'Retry-After': String(limit.retryAfterSec) }
+        }
+      );
+    }
+
     const body = await req.json();
     const identifier = body?.identifier?.trim();
     const password = body?.password?.trim();
@@ -62,7 +79,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Return authenticated profile
+    // Return authenticated profile with server-verified role and status
     return NextResponse.json({
       success: true,
       user: {

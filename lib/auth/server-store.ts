@@ -81,6 +81,7 @@ export const serverAuthStore = {
 
   async findUser(identifier: string): Promise<{ profile: Profile; clipperProfile?: ClipperProfile } | null> {
     const cleanId = identifier.trim().toLowerCase();
+    const sanitizedId = cleanId.replace(/[,()]/g, '');
     const state = loadState();
 
     // 1. Check local server store first
@@ -89,12 +90,12 @@ export const serverAuthStore = {
     );
 
     // 2. Fallback to Supabase if not found locally
-    if (!profile) {
+    if (!profile && sanitizedId) {
       try {
         const { data } = await supabase
           .from('profiles')
           .select('*')
-          .or(`email.ilike.${cleanId},phone_whatsapp.ilike.%${cleanId}%`)
+          .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%${sanitizedId}%`)
           .limit(1);
 
         if (data && data.length > 0) {

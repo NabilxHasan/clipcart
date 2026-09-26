@@ -224,6 +224,17 @@ export class ClipBDRepository {
     if (!campaign) throw new Error('Campaign not found');
     if (campaign.status !== 'ACTIVE') throw new Error('Cannot submit to a campaign that is not currently ACTIVE');
 
+    // Strict authentication check: clipper must be an APPROVED verified account
+    const clipper = mockStore.profiles.find(p => p.id === data.clipperId);
+    if (!clipper) {
+      throw new Error('Clipper account not found. Please log in.');
+    }
+    if (clipper.status !== 'APPROVED') {
+      throw new Error(
+        'Your clipper account is pending ৳50 sign-up verification. Submissions are only accepted once your account is verified by admins.'
+      );
+    }
+
     // Strict security check: Neutralize stored XSS / malicious schemes
     const sanitizedPostUrl = validateAndSanitizeUrl(data.postUrl, 'Post URL');
     const sanitizedCaption = sanitizeText(data.caption, 500);
@@ -422,6 +433,9 @@ export class ClipBDRepository {
 
     const withdrawalId = `wd-${Date.now().toString(36)}`;
     const user = mockStore.profiles.find(p => p.id === data.userId);
+    if (!user || user.status !== 'APPROVED') {
+      throw new Error('Only verified clippers with an APPROVED account can request withdrawals.');
+    }
 
     // 1. Lock funds immediately in wallet ledger
     mockStore.walletTransactions.push({
@@ -485,12 +499,16 @@ export class ClipBDRepository {
     transactionReference: string;
     adminNote?: string;
   }): Promise<WithdrawalRequest> {
-    if (!data.transactionReference || data.transactionReference.trim().length === 0) {
-      throw new Error('A valid Transaction Reference / TrxID is required to mark withdrawal as PAID.');
-    }
-
     const item = mockStore.withdrawalRequests.find(w => w.id === data.withdrawalId);
     if (!item) throw new Error('Withdrawal request not found');
+
+    if (item.status !== 'REQUESTED' && item.status !== 'UNDER_REVIEW') {
+      throw new Error(`Cannot mark withdrawal as PAID: current status is already ${item.status}.`);
+    }
+
+    if (!data.transactionReference || data.transactionReference.trim().length < 6) {
+      throw new Error('A valid Transaction Reference / TrxID (min 6 characters) is required to mark withdrawal as PAID.');
+    }
 
     item.status = 'PAID';
     item.reviewedBy = data.reviewerId;
@@ -518,6 +536,10 @@ export class ClipBDRepository {
   }): Promise<WithdrawalRequest> {
     const item = mockStore.withdrawalRequests.find(w => w.id === data.withdrawalId);
     if (!item) throw new Error('Withdrawal request not found');
+
+    if (item.status !== 'REQUESTED' && item.status !== 'UNDER_REVIEW') {
+      throw new Error(`Cannot reject withdrawal: current status is already ${item.status}. Duplicate refund prevented.`);
+    }
 
     const cleanNote = sanitizeText(data.adminNote, 500) || 'Rejected by moderator';
 

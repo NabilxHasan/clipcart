@@ -1,8 +1,25 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    // Rate limit: max 5 failed attempts per 5 minutes per IP
+    const limit = checkRateLimit(`admin_verify:${clientIp}`, 5, 5 * 60 * 1000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: `Security Lockout: Too many failed passcode attempts. Please wait ${limit.retryAfterSec} seconds.` 
+        },
+        { 
+          status: 429,
+          headers: { 'Retry-After': String(limit.retryAfterSec) }
+        }
+      );
+    }
+
     const body = await req.json();
     const passcode = body?.passcode?.trim();
 
