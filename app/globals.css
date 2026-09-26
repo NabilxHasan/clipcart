@@ -74,21 +74,21 @@ html, body {
 
 /* Neo-Brutalist Solid Shadows */
 .neo-box {
-  background: #ffffff;
+  background-color: #ffffff;
   border: 2.5px solid #18181b;
   border-radius: 18px;
   box-shadow: 4px 4px 0px #18181b;
 }
 
 .neo-box-lg {
-  background: #ffffff;
+  background-color: #ffffff;
   border: 3px solid #18181b;
   border-radius: 22px;
   box-shadow: 6px 6px 0px #18181b;
 }
 
 .neo-box-rose {
-  background: #ffffff;
+  background-color: #ffffff;
   border: 2.5px solid #18181b;
   border-radius: 18px;
   box-shadow: 5px 5px 0px #e11d48;
@@ -104,14 +104,14 @@ html, body {
   color: #f4f4f5 !important;
 }
 
-.dark .neo-box {
+.dark .neo-box:not([class*="bg-rose-"]):not([class*="bg-emerald-"]):not([class*="bg-amber-"]) {
   background-color: #14151a !important;
   border-color: #27272a !important;
   box-shadow: 4px 4px 0px #000000 !important;
   color: #f4f4f5 !important;
 }
 
-.dark .neo-box-lg {
+.dark .neo-box-lg:not([class*="bg-rose-"]):not([class*="bg-emerald-"]):not([class*="bg-amber-"]) {
   background-color: #14151a !important;
   border-color: #27272a !important;
   box-shadow: 6px 6px 0px #000000 !important;

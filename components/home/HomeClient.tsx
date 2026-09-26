@@ -624,12 +624,21 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
 
       {/* 7. HIGH-VOLTAGE CALL TO ACTION BAR */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="neo-box-lg bg-rose-600 text-white p-8 sm:p-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6 border-zinc-950 dark:border-zinc-700 shadow-[6px_6px_0px_#09090b] dark:shadow-[6px_6px_0px_#000000]">
+        <div 
+          className="rounded-[22px] border-[3px] border-zinc-950 dark:border-zinc-700 shadow-[6px_6px_0px_#09090b] dark:shadow-[6px_6px_0px_#000000] !bg-rose-600 dark:!bg-rose-600 text-white p-8 sm:p-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6"
+          style={{ backgroundColor: '#e11d48', color: '#ffffff' }}
+        >
           <div className="space-y-2 text-center sm:text-left">
-            <h3 className="text-2xl sm:text-3xl font-['Unbounded'] font-black text-white">
+            <h3 
+              className="text-2xl sm:text-3xl font-['Unbounded'] font-black text-white"
+              style={{ color: '#ffffff' }}
+            >
               {t.cta.title}
             </h3>
-            <p className="text-xs sm:text-sm text-rose-100 font-['Space_Grotesk'] font-medium">
+            <p 
+              className="text-xs sm:text-sm text-rose-100 font-['Space_Grotesk'] font-medium"
+              style={{ color: '#ffe4e6' }}
+            >
               {t.cta.subtitle}
             </p>
           </div>
@@ -638,14 +647,14 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
               href={whatsappGeneralLaunchUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-black text-xs text-zinc-950 dark:text-zinc-100 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] flex items-center justify-center gap-2 text-center"
+              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-black text-xs text-zinc-950 bg-white hover:bg-zinc-100 border-2 border-zinc-950 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] flex items-center justify-center gap-2 text-center transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]"
             >
-              <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
               <span>{t.cta.launchBrand}</span>
             </a>
             <Link
               href="/register"
-              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-bold text-xs text-white bg-zinc-950 dark:bg-zinc-900 hover:bg-zinc-900 dark:hover:bg-zinc-850 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] text-center"
+              className="px-6 py-3.5 rounded-xl font-['Unbounded'] font-bold text-xs text-white bg-zinc-950 hover:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] text-center transition-all hover:translate-x-[-1px] hover:translate-y-[-1px]"
             >
               {t.cta.joinClipper}
             </Link>
