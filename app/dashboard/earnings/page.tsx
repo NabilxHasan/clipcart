@@ -109,10 +109,10 @@ export default function ClipperEarningsPage() {
                   const isCredit = tx.type === 'CREDIT_EARNING' || tx.type === 'ADJUSTMENT_CREDIT';
                   return (
                     <tr key={tx.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                      <td className="py-3.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <td className="py-3.5 text-[11px] text-zinc-500 dark:text-zinc-400 align-middle">
                         {new Date(tx.createdAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US')}
                       </td>
-                      <td className="py-3.5 text-[10px]">
+                      <td className="py-3.5 text-[10px] align-middle">
                         <span className={`px-2.5 py-1 rounded-md border font-bold ${
                           isCredit
                             ? 'bg-emerald-100 text-emerald-950 border-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
@@ -121,16 +121,16 @@ export default function ClipperEarningsPage() {
                           {txTypeLabels[lang]?.[tx.type] || tx.type.replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td className="py-3.5 font-sans text-xs text-zinc-700 dark:text-zinc-300 font-medium">
+                      <td className="py-3.5 font-sans text-xs text-zinc-700 dark:text-zinc-300 font-medium align-middle">
                         {tx.description}
                       </td>
-                      <td className={`py-3.5 text-right font-black text-sm bn-amount ${
+                      <td className={`py-3.5 text-right font-black text-sm align-middle whitespace-nowrap ${
                         isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                       }`}>
-                        {isCredit ? `+৳${tx.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}` : `-৳${tx.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}`}
+                        <span className="bn-amount">{isCredit ? `+৳${tx.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}` : `-৳${tx.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}`}</span>
                       </td>
-                      <td className="py-3.5 text-right font-bold text-zinc-950 dark:text-zinc-300 bn-amount">
-                        ৳{tx.balanceAfter.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
+                      <td className="py-3.5 text-right font-bold text-zinc-950 dark:text-zinc-300 text-sm align-middle whitespace-nowrap">
+                        <span className="bn-amount">৳{tx.balanceAfter.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</span>
                       </td>
                     </tr>
                   );

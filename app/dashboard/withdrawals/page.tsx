@@ -255,28 +255,28 @@ export default function ClipperWithdrawalsPage() {
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 text-zinc-800 dark:text-zinc-200 font-medium">
                 {financials.withdrawals.map(w => (
                   <tr key={w.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                    <td className="py-3.5 font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <td className="py-3.5 font-mono text-[11px] text-zinc-500 dark:text-zinc-400 align-middle">
                       {new Date(w.createdAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US')}
                     </td>
-                    <td className="py-3.5 font-mono font-black text-zinc-950 dark:text-white text-sm bn-amount">
-                      ৳{w.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}
+                    <td className="py-3.5 font-mono font-black text-zinc-950 dark:text-white text-sm align-middle whitespace-nowrap">
+                      <span className="bn-amount">৳{w.amount.toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US')}</span>
                     </td>
-                    <td className="py-3.5 font-mono text-[11px]">
+                    <td className="py-3.5 font-mono text-[11px] align-middle">
                       <span className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-950 dark:border-zinc-700 font-bold">
                         {w.paymentMethod}
                       </span>
                     </td>
-                    <td className="py-3.5 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <td className="py-3.5 font-mono text-[11px] text-zinc-600 dark:text-zinc-400 align-middle">
                       {w.paymentIdentifier.length > 6
                         ? w.paymentIdentifier.slice(-4).padStart(w.paymentIdentifier.length, '*')
                         : w.paymentIdentifier}
                     </td>
-                    <td className="py-3.5">
+                    <td className="py-3.5 align-middle">
                       <StatusBadge status={w.status} size="sm" />
                     </td>
-                    <td className="py-3.5 text-xs">
+                    <td className="py-3.5 text-xs align-middle">
                       {w.transactionReference ? (
-                        <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-950 dark:border-emerald-800">
+                        <span className="font-mono text-emerald-800 dark:text-emerald-300 font-bold bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-1 rounded-lg border border-emerald-950 dark:border-emerald-800 inline-block">
                           TrxID: {w.transactionReference}
                         </span>
                       ) : (

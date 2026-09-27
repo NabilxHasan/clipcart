@@ -290,6 +290,11 @@ html[lang="bn"] [class*="tracking-"] {
   letter-spacing: 0.02em !important;
 }
 
+td.bn-num, td.bn-amount, th.bn-num, th.bn-amount {
+  display: table-cell !important;
+  vertical-align: middle !important;
+}
+
 
 /* Neo-Brutalist Interactive Buttons */
 .neo-btn {
