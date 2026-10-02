@@ -1,0 +1,17 @@
+name: Supabase & App Keep-Alive
+
+on:
+  schedule:
+    # Run every 3 days at 06:00 UTC (12:00 PM BST) to prevent Supabase 7-day inactivity pause
+    - cron: '0 6 */3 * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Health Endpoint
+        run: |
+          echo "Sending keep-alive ping to ClipCart and Supabase..."
+          curl -s -f -m 30 "https://clipcart.bd/api/health" || curl -s -f -m 30 "https://zjjqafhtaurxpuukfeow.supabase.co/rest/v1/profiles?select=id&limit=1" -H "apikey: sb_publishable_OOBhYCkJXk_To7pheMYgEg_njMyMPxr"
+          echo "Keep-alive ping completed successfully."
