@@ -12,11 +12,23 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  // Default to 'bn' (Bangla) as requested for Bangladesh-first audience, with instant EN toggle
-  const [lang, setLangState] = useState<Language>('bn');
+export function LanguageProvider({
+  children,
+  defaultLang,
+}: {
+  children: React.ReactNode;
+  defaultLang?: Language;
+}) {
+  const [lang, setLangState] = useState<Language>(defaultLang || 'bn');
 
   useEffect(() => {
+    // If a defaultLang is explicitly enforced (e.g. on /en subpath), respect it
+    if (defaultLang) {
+      setLangState(defaultLang);
+      document.documentElement.lang = defaultLang;
+      return;
+    }
+
     const saved = (localStorage.getItem('clipcart_lang') || localStorage.getItem('clipbd_lang')) as Language | null;
     if (saved === 'en' || saved === 'bn') {
       setLangState(saved);
@@ -24,7 +36,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     } else {
       document.documentElement.lang = 'bn';
     }
-  }, []);
+  }, [defaultLang]);
 
   const setLang = (newLang: Language) => {
     setLangState(newLang);

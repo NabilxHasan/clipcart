@@ -18,21 +18,35 @@
     --status-red: #dc2626;
     --status-neutral: #52525b;
 
-    --font-display: 'Unbounded', system-ui, sans-serif;
-    --font-body: 'Space Grotesk', 'Hind Siliguri', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: var(--font-unbounded, 'Unbounded'), system-ui, sans-serif;
+    --font-body: var(--font-space-grotesk, 'Space Grotesk'), var(--font-hind-siliguri, 'Hind Siliguri'), system-ui, sans-serif;
+    --font-mono: var(--font-jetbrains-mono, 'JetBrains Mono'), monospace;
   }
 }
 
 html, body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Space Grotesk', 'Hind Siliguri', system-ui, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
   width: 100%;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Fast local Next.js font class overrides */
+[class*="font-['Unbounded']"] {
+  font-family: var(--font-unbounded, 'Unbounded'), system-ui, sans-serif !important;
+}
+[class*="font-['Space_Grotesk']"] {
+  font-family: var(--font-space-grotesk, 'Space Grotesk'), var(--font-hind-siliguri, 'Hind Siliguri'), system-ui, sans-serif !important;
+}
+[class*="font-['JetBrains_Mono']"] {
+  font-family: var(--font-jetbrains-mono, 'JetBrains Mono'), monospace !important;
+}
+[class*="font-['Hind_Siliguri']"] {
+  font-family: var(--font-hind-siliguri, 'Hind Siliguri'), system-ui, sans-serif !important;
 }
 
 /* Mobile input zoom prevention for iOS Safari (< 16px causes viewport zoom) */

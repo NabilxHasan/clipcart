@@ -48,6 +48,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminAuthGate>
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Top Staff Notice & WhatsApp Alert */}
         <div className="neo-box p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

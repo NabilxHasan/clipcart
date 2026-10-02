@@ -167,14 +167,6 @@ export function Navbar() {
       {/* 5. Mobile & Tablet Drawer (< xl) */}
       {isOpen && (
         <div className="xl:hidden mt-2 border-[2.5px] border-zinc-950 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-2xl p-4 space-y-4 shadow-[6px_6px_0px_#09090b] dark:shadow-[6px_6px_0px_#000000] animate-in fade-in slide-in-from-top-2 duration-200">
-          {/* Full-width Language Switcher in Drawer */}
-          <div className="space-y-1">
-            <span className="text-[11px] font-['JetBrains_Mono'] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider block">
-              {t.nav.selectLanguage}
-            </span>
-            <LanguageToggle variant="full" />
-          </div>
-
           {/* WhatsApp Community Direct Link for Mobile */}
           <div className="pt-1">
             <a

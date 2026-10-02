@@ -176,6 +176,9 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 space-y-8">
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       <div className="text-center space-y-3">
         <div className="w-12 h-12 rounded-2xl bg-rose-600 border-2 border-zinc-950 dark:border-zinc-700 flex items-center justify-center text-white mx-auto shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000]">
           <PlaySquare className="w-6 h-6 fill-white" />

@@ -237,6 +237,9 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 sm:py-16 space-y-8">
+      <head>
+        <meta name="robots" content="noindex, nofollow" />
+      </head>
       {/* 1. MANDATORY WHATSAPP COMMUNITY GATE (Shown after registration) */}
       {registeredUserId ? (
         <div className="neo-box-lg bg-white dark:bg-[#14151a] p-8 sm:p-12 text-center space-y-6 animate-in zoom-in-95 duration-200">

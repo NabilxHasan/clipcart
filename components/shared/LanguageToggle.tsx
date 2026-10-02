@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '../../lib/i18n/context';
 
@@ -11,13 +12,32 @@ interface LanguageToggleProps {
 
 export function LanguageToggle({ className = '', variant = 'compact' }: LanguageToggleProps) {
   const { lang, setLang } = useLanguage();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLanguageSwitch = (targetLang: 'bn' | 'en') => {
+    setLang(targetLang);
+
+    // If we're on admin or dashboard, do not rewrite routes
+    if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard') || pathname.startsWith('/api')) {
+      return;
+    }
+
+    if (targetLang === 'en' && !pathname.startsWith('/en')) {
+      const targetPath = pathname === '/' ? '/en' : `/en${pathname}`;
+      router.push(targetPath);
+    } else if (targetLang === 'bn' && pathname.startsWith('/en')) {
+      const targetPath = pathname === '/en' ? '/' : pathname.replace(/^\/en/, '');
+      router.push(targetPath);
+    }
+  };
 
   if (variant === 'full') {
     return (
       <div className={`w-full bg-white dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 p-1.5 rounded-xl flex items-center gap-1.5 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000] ${className}`}>
         <button
           type="button"
-          onClick={() => setLang('bn')}
+          onClick={() => handleLanguageSwitch('bn')}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
             lang === 'bn'
               ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]'
@@ -30,7 +50,7 @@ export function LanguageToggle({ className = '', variant = 'compact' }: Language
         </button>
         <button
           type="button"
-          onClick={() => setLang('en')}
+          onClick={() => handleLanguageSwitch('en')}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
             lang === 'en'
               ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]'
@@ -56,7 +76,7 @@ export function LanguageToggle({ className = '', variant = 'compact' }: Language
       </div>
       <button
         type="button"
-        onClick={() => setLang('en')}
+        onClick={() => handleLanguageSwitch('en')}
         className={`px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer border ${
           lang === 'en'
             ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[1px_1px_0px_#09090b] dark:shadow-[1px_1px_0px_#000000]'
@@ -69,7 +89,7 @@ export function LanguageToggle({ className = '', variant = 'compact' }: Language
       </button>
       <button
         type="button"
-        onClick={() => setLang('bn')}
+        onClick={() => handleLanguageSwitch('bn')}
         className={`px-2 py-0.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer border ${
           lang === 'bn'
             ? 'bg-rose-600 text-white border-zinc-950 dark:border-zinc-700 shadow-[1px_1px_0px_#09090b] dark:shadow-[1px_1px_0px_#000000]'

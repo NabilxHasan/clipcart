@@ -1,11 +1,43 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Mail, MessageSquare, Phone, ArrowRight, ExternalLink } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
+import { JsonLd } from '../../components/seo/JsonLd';
+import { getBreadcrumbSchema } from '../../lib/seo/schema';
+
+export const metadata: Metadata = {
+  title: 'যোগাযোগ ও সাপোর্ট — ঢাকা অপারেশন্স ডেস্ক',
+  description:
+    'ক্লিপকার্ট ঢাকা অপারেশন্স ডেস্ক। ব্র্যান্ড ক্যাম্পেইন লঞ্চ, পডকাস্ট ডিস্ট্রিবিউশন ও ক্লিপার সহায়তার জন্য সরাসরি যোগাযোগ করুন আমাদের অফিসিয়াল হোয়াটসঅ্যাপে (+8801337142248)।',
+  alternates: {
+    canonical: '/contact',
+    languages: {
+      'bn-BD': '/contact',
+      'en-BD': '/en/contact',
+      'x-default': '/contact',
+    },
+  },
+  openGraph: {
+    title: 'যোগাযোগ — ClipCart Dhaka Operations Desk',
+    description:
+      'হোয়াটসঅ্যাপ হটলাইন +8801337142248। ব্র্যান্ড কনসালটেশন ও ক্লিপার সাপোর্ট।',
+    url: '/contact',
+    locale: 'bn_BD',
+    type: 'website',
+  },
+};
 
 export default function ContactPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
+    <>
+      <JsonLd
+        schema={getBreadcrumbSchema([
+          { name: 'হোম', url: '/' },
+          { name: 'যোগাযোগ', url: '/contact' },
+        ])}
+      />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-8">
       {/* Top Banner */}
       <div className="space-y-3 pb-2">
         <div className="flex items-center gap-2">
@@ -194,5 +226,6 @@ export default function ContactPage() {
         </Link>
       </div>
     </div>
-  );
+  </>
+);
 }
