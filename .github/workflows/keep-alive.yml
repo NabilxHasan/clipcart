@@ -1,17 +1,33 @@
-name: Supabase & App Keep-Alive
+name: Supabase Keep-Alive
 
 on:
   schedule:
-    # Run every 3 days at 06:00 UTC (12:00 PM BST) to prevent Supabase 7-day inactivity pause
-    - cron: '0 6 */3 * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    # Run daily at 04:00 UTC (10:00 AM BST) to prevent Supabase 7-day inactivity pause
+    - cron: '0 4 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI or gh CLI
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Health Endpoint
+      - name: Ping Supabase Database & Auth Endpoints
         run: |
-          echo "Sending keep-alive ping to ClipCart and Supabase..."
-          curl -s -f -m 30 "https://clipcart.bd/api/health" || curl -s -f -m 30 "https://zjjqafhtaurxpuukfeow.supabase.co/rest/v1/profiles?select=id&limit=1" -H "apikey: sb_publishable_OOBhYCkJXk_To7pheMYgEg_njMyMPxr"
-          echo "Keep-alive ping completed successfully."
+          echo "Sending keep-alive query to Supabase REST & Auth APIs..."
+          
+          # 1. Ping REST API (direct query to database table to register DB activity)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 \
+            "https://zjjqafhtaurxpuukfeow.supabase.co/rest/v1/profiles?select=id&limit=1" \
+            -H "apikey: sb_publishable_OOBhYCkJXk_To7pheMYgEg_njMyMPxr" || echo "failed")
+          echo "Supabase REST API status: $STATUS"
+
+          # 2. Ping Auth API
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -m 15 \
+            "https://zjjqafhtaurxpuukfeow.supabase.co/auth/v1/health" \
+            -H "apikey: sb_publishable_OOBhYCkJXk_To7pheMYgEg_njMyMPxr" || echo "failed")
+          echo "Supabase Auth API status: $AUTH_STATUS"
+
+          if [ "$STATUS" = "200" ] || [ "$AUTH_STATUS" = "200" ]; then
+            echo "Success: Keep-alive activity successfully registered with Supabase."
+          else
+            echo "Notice: Non-200 response ($STATUS / $AUTH_STATUS). If project is currently paused, please unpause it from the Supabase dashboard."
+          fi
