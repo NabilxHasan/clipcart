@@ -6,6 +6,11 @@ import { CampaignDetailClient } from '../../../../components/campaigns/CampaignD
 import { JsonLd } from '../../../../components/seo/JsonLd';
 import { getBreadcrumbSchema } from '../../../../lib/seo/schema';
 
+export async function generateStaticParams() {
+  const campaigns = await ClipBDRepository.getActiveCampaigns();
+  return campaigns.map((c) => ({ id: c.slug || c.id }));
+}
+
 export async function generateMetadata({
   params,
 }: {

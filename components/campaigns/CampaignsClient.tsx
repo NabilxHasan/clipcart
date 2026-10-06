@@ -1,18 +1,27 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, ArrowRight, ExternalLink, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { Campaign, PlatformType } from '../../lib/types/database';
 import { StatusBadge } from '../shared/StatusBadge';
 import { useLanguage } from '../../lib/i18n/context';
+import { ClipBDRepository } from '../../lib/db/repository';
 
 export function CampaignsClient({ initialCampaigns }: { initialCampaigns: Campaign[] }) {
   const { t } = useLanguage();
-  const [campaigns] = useState<Campaign[]>(initialCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
   const [search, setSearch] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ACTIVE');
+
+  useEffect(() => {
+    ClipBDRepository.getCampaigns('ALL').then((loaded) => {
+      if (loaded && loaded.length > 0) {
+        setCampaigns(loaded);
+      }
+    });
+  }, []);
 
   const filtered = campaigns.filter((c) => {
     const matchesSearch =

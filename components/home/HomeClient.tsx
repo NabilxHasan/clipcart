@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   ArrowRight, 
@@ -19,9 +19,19 @@ import {
 import { Campaign } from '../../lib/types/database';
 import { StatusBadge } from '../shared/StatusBadge';
 import { useLanguage } from '../../lib/i18n/context';
+import { ClipBDRepository } from '../../lib/db/repository';
 
 export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] }) {
   const { t, lang } = useLanguage();
+  const [campaigns, setCampaigns] = useState<Campaign[]>(activeCampaigns);
+
+  useEffect(() => {
+    ClipBDRepository.getActiveCampaigns().then((loaded) => {
+      if (loaded && loaded.length > 0) {
+        setCampaigns(loaded);
+      }
+    });
+  }, []);
 
   // Campaign Calculator State (Flexible BD Market Tiers)
   const [calcTier, setCalcTier] = useState<'1000' | '2500' | '5000' | 'custom'>('1000');
@@ -488,18 +498,18 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
             href="/campaigns"
             className="text-xs font-['JetBrains_Mono'] font-bold text-rose-600 dark:text-rose-400 hover:text-zinc-950 dark:hover:text-white inline-flex items-center gap-1 self-start sm:self-auto"
           >
-            <span>{t.campaigns.viewAll} ({activeCampaigns.length})</span>
+            <span>{t.campaigns.viewAll} ({campaigns.length})</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {activeCampaigns.length === 0 ? (
+        {campaigns.length === 0 ? (
           <div className="p-8 text-center rounded-2xl bg-white dark:bg-[#14151a] border-2 border-zinc-950 dark:border-zinc-700 shadow-[4px_4px_0px_#09090b] dark:shadow-[4px_4px_0px_#000000]">
             <p className="text-sm text-zinc-600 dark:text-zinc-400 font-['Space_Grotesk']">{t.campaigns.noActive}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {activeCampaigns.map(campaign => (
+            {campaigns.map(campaign => (
               <div
                 key={campaign.id}
                 className="neo-box bg-white dark:bg-[#14151a] p-5 flex flex-col justify-between space-y-4"

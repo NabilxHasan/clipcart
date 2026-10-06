@@ -18,6 +18,43 @@ import {
   AuditLog,
 } from '../types/database';
 
+export const defaultLaunchCampaign: Campaign = {
+  id: 'cmp-launch-01',
+  title: 'ClipCart Launch Campaign',
+  slug: 'clip-cart-launch-campaign',
+  clientName: 'ClipCart BD',
+  description:
+    'ClipCart প্ল্যাটফর্মের অফিসিয়াল লঞ্চ ক্যাম্পেইন! ClipCart কীভাবে কাজ করে, ক্লিপারদের ০% ফি এবং মাত্র ৳৫০ মিনিমাম বিকাশে ক্যাশআউট নিয়ে ক্রিয়েটিভ শর্টস, টিকটক ও রিলস তৈরি করে আয় করুন। প্রতি ১,০০০ ভিউয়ে নিশ্চিত ৳৫০ CPM!',
+  category: 'Tech & Creator Economy',
+  status: 'ACTIVE',
+  totalBudget: 1000,
+  remainingBudget: 1000,
+  payoutType: 'CPM',
+  cpmRate: 50,
+  fixedReward: 0,
+  maxPayoutPerClip: 500,
+  minViews: 500,
+  maxViews: 20000,
+  startDate: new Date().toISOString(),
+  endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  platforms: ['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK'],
+  rules: [
+    'ভিডিও অবশ্যই ৯:১৬ ভার্টিক্যাল ফরম্যাটে হতে হবে (২০-৫৮ সেকেন্ড)।',
+    'অন-স্ক্রিন আকর্ষণীয় অ্যানিমেটেড বাংলা বা ইংরেজি ক্যাপশন থাকতে হবে।',
+    'ক্যাপশনে @ClipCartBD ট্যাগ এবং #ClipCartBD হ্যাশট্যাগ ব্যবহার করতে হবে।',
+    'ক্লিপারদের ০% ফি ও সরাসরি বিকাশে দ্রুত পেমেন্টের সুবিধা উল্লেখ করতে হবে।',
+  ],
+  restrictions: [
+    'কপিরাইটযুক্ত সাউন্ড বা অডিও ব্যবহার করা যাবে না যা প্ল্যাটফর্মে মিউট হয়।',
+    'অপ্রাসঙ্গিক বা বিভ্রান্তিকর ক্লিকবেইট টাইটেল ব্যবহার করা যাবে না।',
+  ],
+  sourceUrl: 'https://drive.google.com/drive/folders/1clipcart-official-assets',
+  exampleUrl: 'https://youtube.com/shorts/clipcart-launch-demo',
+  createdBy: 'usr-admin-01',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+
 class ClipBDStore {
   profiles: Profile[] = [
     {
@@ -34,7 +71,7 @@ class ClipBDStore {
   ];
 
   clipperProfiles: ClipperProfile[] = [];
-  campaigns: Campaign[] = [];
+  campaigns: Campaign[] = [{ ...defaultLaunchCampaign }];
   submissions: Submission[] = [];
   submissionFlags: SubmissionFlag[] = [];
   submissionReviews: SubmissionReview[] = [];
@@ -75,7 +112,7 @@ class ClipBDStore {
   }
 
   clearDemoData() {
-    this.campaigns = [];
+    this.campaigns = [{ ...defaultLaunchCampaign }];
     this.submissions = [];
     this.submissionFlags = [];
     this.submissionReviews = [];
@@ -144,9 +181,46 @@ class ClipBDStore {
           if (data.whatsappSettings && data.whatsappSettings.communityInviteUrl) this.whatsappSettings = data.whatsappSettings;
           if (Array.isArray(data.notifications)) this.notifications = data.notifications;
           if (Array.isArray(data.auditLogs)) this.auditLogs = data.auditLogs;
-        } else {
-          this.saveToStorage();
         }
+
+        // Ensure active launch campaign is always present with ৳1,000 budget and 30-day duration
+        const thirtyDaysFuture = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        if (!this.campaigns || this.campaigns.length === 0) {
+          this.campaigns = [{
+            ...defaultLaunchCampaign,
+            startDate: new Date().toISOString(),
+            endDate: thirtyDaysFuture,
+          }];
+        } else {
+          for (const c of this.campaigns) {
+            if (
+              c.id === 'cmp-launch-01' ||
+              c.slug === 'clip-cart-launch-campaign' ||
+              c.title.toLowerCase().includes('launch') ||
+              c.clientName.toLowerCase().includes('clipcart') ||
+              this.campaigns.length === 1
+            ) {
+              c.totalBudget = 1000;
+              c.remainingBudget = 1000;
+              c.status = 'ACTIVE';
+              c.startDate = new Date().toISOString();
+              c.endDate = thirtyDaysFuture;
+              c.updatedAt = new Date().toISOString();
+            }
+          }
+
+          const hasLaunch = this.campaigns.some(
+            c => c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign'
+          );
+          if (!hasLaunch) {
+            this.campaigns.unshift({
+              ...defaultLaunchCampaign,
+              startDate: new Date().toISOString(),
+              endDate: thirtyDaysFuture,
+            });
+          }
+        }
+        this.saveToStorage();
       } catch {
         // Corrupted storage; fallback to initial state
       }
