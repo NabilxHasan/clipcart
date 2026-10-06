@@ -18,6 +18,7 @@ import {
 } from '../types/database';
 import { LedgerEngine } from '../ledger/service';
 import { AiModeratorService } from '../moderation/service';
+import { detectSqlInjection, sanitizeSqlSafeText } from '../security/anti-sqli';
 
 export function validateAndSanitizeUrl(rawUrl: string, fieldName = 'URL'): string {
   const trimmed = (rawUrl || '').trim();
@@ -41,9 +42,7 @@ export function validateAndSanitizeUrl(rawUrl: string, fieldName = 'URL'): strin
 
 export function sanitizeText(text?: string, maxLength = 1000): string | undefined {
   if (!text) return undefined;
-  // Strip control characters (except newlines and tabs)
-  const cleaned = text.replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F]/g, '').trim();
-  return cleaned.slice(0, maxLength);
+  return sanitizeSqlSafeText(text, maxLength);
 }
 
 export class ClipBDRepository {
@@ -53,11 +52,15 @@ export class ClipBDRepository {
   }
 
   static async getProfileById(userId: string): Promise<Profile | null> {
-    return mockStore.profiles.find(p => p.id === userId) || null;
+    if (!userId || detectSqlInjection(userId).isSuspicious) return null;
+    const clean = userId.trim();
+    return mockStore.profiles.find(p => p.id === clean) || null;
   }
 
   static async getClipperProfile(userId: string): Promise<ClipperProfile | null> {
-    return mockStore.clipperProfiles.find(cp => cp.userId === userId) || null;
+    if (!userId || detectSqlInjection(userId).isSuspicious) return null;
+    const clean = userId.trim();
+    return mockStore.clipperProfiles.find(cp => cp.userId === clean) || null;
   }
 
   static async updateClipperProfile(userId: string, data: Partial<ClipperProfile>): Promise<ClipperProfile> {
@@ -119,8 +122,12 @@ export class ClipBDRepository {
   }
 
   static async getCampaignBySlugOrId(identifier: string): Promise<Campaign | null> {
+    if (!identifier || detectSqlInjection(identifier).isSuspicious) {
+      return null;
+    }
+    const clean = identifier.trim().toLowerCase();
     this.autoExpireCampaigns();
-    return mockStore.campaigns.find(c => c.id === identifier || c.slug === identifier) || null;
+    return mockStore.campaigns.find(c => c.id.toLowerCase() === clean || c.slug.toLowerCase() === clean) || null;
   }
 
   static async createCampaign(data: Omit<Campaign, 'id' | 'createdAt' | 'updatedAt' | 'remainingBudget' | 'status'>, actorId: string): Promise<Campaign> {

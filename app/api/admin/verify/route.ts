@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
+import { detectSqlInjection } from '@/lib/security/anti-sqli';
 
 export async function POST(req: Request) {
   try {
@@ -22,6 +23,13 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const passcode = body?.passcode?.trim();
+
+    if (passcode && detectSqlInjection(passcode).isSuspicious) {
+      return NextResponse.json(
+        { success: false, error: 'Security Alert: Invalid input detected. SQL injection syntax is blocked.' },
+        { status: 400 }
+      );
+    }
 
     const expectedPasscode = process.env.ADMIN_MASTER_KEY || 'ClipCart@Admin2026!';
 

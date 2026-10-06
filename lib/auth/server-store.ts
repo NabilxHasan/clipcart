@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import { Profile, ClipperProfile, UserStatus } from '../types/database';
 import { supabaseAdmin } from '../supabase/admin';
+import { classifyIdentifier, detectSqlInjection } from '../security/anti-sqli';
 
 interface ServerDbState {
   profiles: Profile[];
@@ -80,72 +81,77 @@ export const serverAuthStore = {
   },
 
   async findUser(identifier: string): Promise<{ profile: Profile; clipperProfile?: ClipperProfile } | null> {
-    const cleanId = identifier.trim().toLowerCase();
-    const sanitizedId = cleanId.replace(/[,()]/g, '');
-    const digitsId = cleanId.replace(/\D/g, '');
+    const classified = classifyIdentifier(identifier);
+    if (classified.type === 'INVALID') {
+      return null;
+    }
+
     const state = loadState();
+    let profile: Profile | undefined;
 
-    // 1. Check local server store first (by email, phone, id, or signupTrxId)
-    let profile = state.profiles.find(p => {
-      if (p.email && p.email.toLowerCase() === cleanId) return true;
-      if (p.id && p.id.toLowerCase() === cleanId) return true;
-      if (p.phoneWhatsapp) {
-        const cleanPhone = p.phoneWhatsapp.replace(/\s+/g, '').toLowerCase();
-        if (cleanPhone === cleanId || cleanPhone.includes(cleanId)) return true;
-        const digitsPhone = p.phoneWhatsapp.replace(/\D/g, '');
-        if (digitsId.length >= 8 && digitsPhone.length >= 8) {
-          if (digitsPhone.endsWith(digitsId) || digitsId.endsWith(digitsPhone)) return true;
-        }
-      }
-      return false;
-    });
-
-    if (!profile) {
+    // 1. Strict typed lookup in local server store
+    if (classified.type === 'EMAIL') {
+      profile = state.profiles.find(p => p.email && p.email.toLowerCase() === classified.clean);
+    } else if (classified.type === 'UUID') {
+      profile = state.profiles.find(p => p.id && p.id.toLowerCase() === classified.clean);
+    } else if (classified.type === 'PHONE') {
+      profile = state.profiles.find(p => {
+        if (!p.phoneWhatsapp) return false;
+        const digits = p.phoneWhatsapp.replace(/\D/g, '');
+        return digits.endsWith(classified.clean.slice(-10));
+      });
+    } else if (classified.type === 'TRX_ID') {
       const matchedCp = state.clipperProfiles.find(
-        cp => cp.signupTrxId && cp.signupTrxId.trim().toLowerCase() === cleanId
+        cp => cp.signupTrxId && cp.signupTrxId.toUpperCase() === classified.clean
       );
       if (matchedCp) {
         profile = state.profiles.find(p => p.id === matchedCp.userId);
       }
     }
 
-    // 2. Fallback to Supabase if not found locally
-    if (!profile && sanitizedId) {
+    // 2. Parameterized fallback to Supabase (Strictly NO raw string concatenation)
+    if (!profile) {
       try {
-        const { data, error } = await supabaseAdmin
-          .from('profiles')
-          .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
-          .or(`email.ilike.${sanitizedId},phone_whatsapp.ilike.%25${sanitizedId}%25`)
-          .limit(1);
+        let row: {
+          id: string;
+          email: string;
+          role: Profile['role'];
+          full_name: string;
+          phone_whatsapp?: string;
+          country?: string;
+          status: Profile['status'];
+          updated_at?: string;
+        } | null = null;
 
-        let row = data && data.length > 0 ? data[0] : null;
-
-        if (!row) {
-          // Try direct email match as fallback
-          const { data: emailData } = await supabaseAdmin
+        if (classified.type === 'EMAIL') {
+          const { data } = await supabaseAdmin
             .from('profiles')
             .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
-            .ilike('email', sanitizedId)
+            .eq('email', classified.clean)
             .limit(1);
-          if (emailData && emailData.length > 0) row = emailData[0];
-        }
-
-        if (!row && digitsId.length >= 8) {
-          // Try phone search
-          const { data: phoneData } = await supabaseAdmin
+          if (data && data.length > 0) row = data[0];
+        } else if (classified.type === 'UUID') {
+          const { data } = await supabaseAdmin
             .from('profiles')
             .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
-            .ilike('phone_whatsapp', `%${digitsId.slice(-8)}%`)
+            .eq('id', classified.clean)
             .limit(1);
-          if (phoneData && phoneData.length > 0) row = phoneData[0];
-        }
-
-        if (!row) {
-          // Check by signupTrxId in Supabase
+          if (data && data.length > 0) row = data[0];
+        } else if (classified.type === 'PHONE') {
+          const localBd = classified.clean; // e.g. 01712345678
+          const intlBd = '+88' + classified.clean; // e.g. +8801712345678
+          const intlBdNoPlus = '88' + classified.clean; // e.g. 8801712345678
+          const { data } = await supabaseAdmin
+            .from('profiles')
+            .select('id, email, role, full_name, phone_whatsapp, country, status, updated_at')
+            .in('phone_whatsapp', [localBd, intlBd, intlBdNoPlus])
+            .limit(1);
+          if (data && data.length > 0) row = data[0];
+        } else if (classified.type === 'TRX_ID') {
           const { data: cpData } = await supabaseAdmin
             .from('clipper_profiles')
             .select('user_id')
-            .ilike('signup_trx_id', sanitizedId)
+            .eq('signup_trx_id', classified.clean)
             .limit(1);
 
           if (cpData && cpData.length > 0) {
@@ -333,49 +339,56 @@ export const serverAuthStore = {
   },
 
   async deleteUser(identifier: string): Promise<boolean> {
-    const cleanId = identifier.trim().toLowerCase();
+    const classified = classifyIdentifier(identifier);
+    if (classified.type === 'INVALID') {
+      return false;
+    }
     const state = loadState();
 
-    // 1. Locate matching profile in local store
-    const matchedProfile = state.profiles.find(
-      p => p.id.toLowerCase() === cleanId || 
-           p.email.toLowerCase() === cleanId || 
-           (p.phoneWhatsapp && p.phoneWhatsapp.replace(/\s+/g, '').includes(cleanId))
-    );
-
-    let targetUserId = matchedProfile?.id;
-
-    if (!targetUserId) {
-      const matchedCp = state.clipperProfiles.find(
-        cp => cp.signupTrxId && cp.signupTrxId.toLowerCase() === cleanId
-      );
-      if (matchedCp) {
-        targetUserId = matchedCp.userId;
-      }
+    // 1. Locate matching profile in local store with strict typed equality
+    let matchedProfile: Profile | undefined;
+    if (classified.type === 'EMAIL') {
+      matchedProfile = state.profiles.find(p => p.email && p.email.toLowerCase() === classified.clean);
+    } else if (classified.type === 'UUID') {
+      matchedProfile = state.profiles.find(p => p.id && p.id.toLowerCase() === classified.clean);
+    } else if (classified.type === 'PHONE') {
+      matchedProfile = state.profiles.find(p => {
+        if (!p.phoneWhatsapp) return false;
+        const digits = p.phoneWhatsapp.replace(/\D/g, '');
+        return digits.endsWith(classified.clean.slice(-10));
+      });
+    } else if (classified.type === 'TRX_ID') {
+      const cp = state.clipperProfiles.find(c => c.signupTrxId && c.signupTrxId.toUpperCase() === classified.clean);
+      if (cp) matchedProfile = state.profiles.find(p => p.id === cp.userId);
     }
+
+    // STRICT DEFENSE: Never delete Super Admin or Admin accounts
+    if (
+      matchedProfile?.role === 'SUPER_ADMIN' ||
+      matchedProfile?.role === 'ADMIN' ||
+      matchedProfile?.id === 'usr-admin-01'
+    ) {
+      return false;
+    }
+
+    const targetUserId = matchedProfile?.id;
 
     if (targetUserId) {
-      state.profiles = state.profiles.filter(p => p.id !== targetUserId && p.id !== 'usr-nabil-01');
+      state.profiles = state.profiles.filter(p => p.id !== targetUserId && p.id !== 'usr-admin-01' && p.id !== 'usr-nabil-01');
       state.clipperProfiles = state.clipperProfiles.filter(cp => cp.userId !== targetUserId && cp.signupTrxId !== 'DIQ7WUNHRX');
-    }
+      saveState(state);
 
-    // Explicitly purge legacy dummy pre-password account usr-nabil-01 and DIQ7WUNHRX
-    state.profiles = state.profiles.filter(p => p.id !== 'usr-nabil-01');
-    state.clipperProfiles = state.clipperProfiles.filter(cp => cp.signupTrxId !== 'DIQ7WUNHRX');
-    saveState(state);
-
-    // 2. Delete from Supabase
-    try {
-      if (targetUserId) {
+      // 2. Delete from Supabase safely using parameterized .eq()
+      try {
         await supabaseAdmin.from('clipper_profiles').delete().eq('user_id', targetUserId);
         await supabaseAdmin.from('profiles').delete().eq('id', targetUserId);
+      } catch (err) {
+        console.warn('Supabase deleteUser notice:', err);
       }
-      await supabaseAdmin.from('clipper_profiles').delete().eq('signup_trx_id', 'DIQ7WUNHRX');
-    } catch (err) {
-      console.warn('Supabase deleteUser notice:', err);
+      return true;
     }
 
-    return true;
+    return false;
   },
 
   updateStatus(userId: string, status: UserStatus): boolean {

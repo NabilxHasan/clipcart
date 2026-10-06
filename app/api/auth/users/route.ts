@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { UserStatus } from '@/lib/types/database';
+import { detectSqlInjection } from '@/lib/security/anti-sqli';
 
 async function isAuthorizedAdmin(req: Request): Promise<boolean> {
   // 1. Verify HttpOnly session cookie
@@ -63,6 +64,13 @@ export async function POST(req: Request) {
     if (!userId || !status) {
       return NextResponse.json(
         { success: false, error: 'User ID and status are required' },
+        { status: 400 }
+      );
+    }
+
+    if (detectSqlInjection(userId).isSuspicious) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid user ID format. SQL syntax rejected.' },
         { status: 400 }
       );
     }

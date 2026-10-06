@@ -4,6 +4,7 @@ import { serverAuthStore } from '@/lib/auth/server-store';
 import { Profile, ClipperProfile } from '@/lib/types/database';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
 import { validateEmail } from '@/lib/validation/email';
+import { detectSqlInjection } from '@/lib/security/anti-sqli';
 
 export async function POST(req: Request) {
   try {
@@ -33,6 +34,29 @@ export async function POST(req: Request) {
     const phoneWhatsapp = rawProfile?.phoneWhatsapp?.trim();
     const country = rawProfile?.country?.trim() || 'Bangladesh';
     const signupTrxId = rawClipper?.signupTrxId?.trim().toUpperCase();
+
+    // SQL Injection Defense Gate
+    const fieldsToScan = [
+      fullName,
+      email,
+      password,
+      phoneWhatsapp,
+      country,
+      signupTrxId,
+      rawClipper?.tiktokHandle,
+      rawClipper?.instagramHandle,
+      rawClipper?.youtubeHandle,
+      rawClipper?.facebookHandle,
+    ];
+
+    for (const val of fieldsToScan) {
+      if (val && detectSqlInjection(val).isSuspicious) {
+        return NextResponse.json(
+          { success: false, error: 'Security Alert: Invalid input detected. SQL injection syntax is blocked.' },
+          { status: 400 }
+        );
+      }
+    }
 
     if (!fullName || fullName.length < 2) {
       return NextResponse.json(

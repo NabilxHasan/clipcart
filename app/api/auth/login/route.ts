@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
+import { detectSqlInjection } from '@/lib/security/anti-sqli';
 
 export async function POST(req: Request) {
   try {
@@ -34,6 +35,19 @@ export async function POST(req: Request) {
     if (!password) {
       return NextResponse.json(
         { success: false, error: 'Please enter your account password.' },
+        { status: 400 }
+      );
+    }
+
+    // Comprehensive Anti-SQL Injection Defense Gate
+    const idScan = detectSqlInjection(identifier);
+    const pwScan = detectSqlInjection(password);
+    if (idScan.isSuspicious || pwScan.isSuspicious) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Security Alert: Invalid input detected. SQL injection syntax is blocked.' 
+        },
         { status: 400 }
       );
     }
