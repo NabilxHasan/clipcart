@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { ADMIN_COOKIE, verifyAdminSessionToken } from './lib/auth/admin-session';
+
+// Admin-only APIs: rejected here unless the request carries a valid signed admin session.
+const ADMIN_API_PATHS = new Set(['/api/auth/users', '/api/auth/delete-user']);
 
 function applySecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-Content-Type-Options', 'nosniff');
@@ -9,21 +13,13 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Guard /api/auth/users at the server/edge level
-  if (pathname === '/api/auth/users') {
-    const adminToken = request.cookies.get('clipcart_admin_token')?.value;
-    const authHeader = request.headers.get('authorization');
-    const masterKey = process.env.ADMIN_MASTER_KEY || 'ClipCart@Admin2026!';
-
-    const isAuthorized =
-      adminToken === 'clipcart_admin_authorized_v1' ||
-      authHeader === `Bearer ${masterKey}` ||
-      authHeader === masterKey;
-
-    if (!isAuthorized) {
+  // 1. Guard admin APIs at the edge (the route handlers check again)
+  if (ADMIN_API_PATHS.has(pathname)) {
+    const authorized = await verifyAdminSessionToken(request.cookies.get(ADMIN_COOKIE)?.value);
+    if (!authorized) {
       return applySecurityHeaders(
         NextResponse.json(
           { success: false, error: 'Unauthorized: Admin authentication required.' },
@@ -33,13 +29,15 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Add baseline security headers to normal responses
-  return applySecurityHeaders(NextResponse.next());
+  // 2. Baseline security headers; admin pages are never cached or indexed
+  const res = NextResponse.next();
+  if (pathname.startsWith('/admin')) {
+    res.headers.set('Cache-Control', 'private, no-store');
+    res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  }
+  return applySecurityHeaders(res);
 }
 
 export const config = {
-  matcher: [
-    '/admin/:path*',
-    '/api/auth/users',
-  ],
+  matcher: ['/admin/:path*', '/api/auth/users', '/api/auth/delete-user'],
 };

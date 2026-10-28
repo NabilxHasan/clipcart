@@ -1,38 +1,20 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
+import { hasAdminSession } from '@/lib/auth/require-admin';
 import { UserStatus } from '@/lib/types/database';
 import { detectSqlInjection } from '@/lib/security/anti-sqli';
 
-async function isAuthorizedAdmin(req: Request): Promise<boolean> {
-  // 1. Verify HttpOnly session cookie
-  const cookieStore = await cookies();
-  const token = cookieStore.get('clipcart_admin_token')?.value;
-  if (token === 'clipcart_admin_authorized_v1') {
-    return true;
-  }
-
-  // 2. Fallback: Verify Authorization header with master key
-  const authHeader = req.headers.get('authorization');
-  const expectedKey = process.env.ADMIN_MASTER_KEY || 'ClipCart@Admin2026!';
-  if (authHeader && (authHeader === `Bearer ${expectedKey}` || authHeader === expectedKey)) {
-    return true;
-  }
-
-  return false;
-}
-
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const authorized = await isAuthorizedAdmin(req);
-    if (!authorized) {
+    if (!(await hasAdminSession())) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Admin authentication required.' },
         { status: 401 }
       );
     }
 
-    const profiles = serverAuthStore.getProfiles();
+    // Credentials never leave the server, not even to admins
+    const profiles = serverAuthStore.getProfiles().map(({ password: _pw, passwordHash: _hash, ...rest }) => rest);
     const clipperProfiles = serverAuthStore.getClipperProfiles();
 
     return NextResponse.json({
@@ -50,8 +32,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const authorized = await isAuthorizedAdmin(req);
-    if (!authorized) {
+    if (!(await hasAdminSession())) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Admin authentication required.' },
         { status: 401 }

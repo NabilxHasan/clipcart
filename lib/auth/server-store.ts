@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { timingSafeEqual } from 'crypto';
+import bcrypt from 'bcryptjs';
 import { Profile, ClipperProfile, UserStatus } from '../types/database';
 import { supabaseAdmin } from '../supabase/admin';
 import { classifyIdentifier, detectSqlInjection } from '../security/anti-sqli';
@@ -11,6 +13,30 @@ interface ServerDbState {
 }
 
 const STORAGE_FILE = path.join(os.tmpdir(), 'clipcart_users_store_v1.json');
+const BCRYPT_ROUNDS = 10;
+
+// clipper_profiles.editing_experience holds JSON {exp, fb}. Older rows also packed a plain-text "pw" in it;
+// those are converted to a bcrypt hash in user_credentials (migration 004, or on that user's next login).
+function parseExperience(raw?: string | null): { exp: string; fb: string; pw: string } {
+  const out = { exp: raw || '', fb: '', pw: '' };
+  if (raw && raw.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(raw);
+      out.exp = parsed.exp ?? '';
+      out.fb = parsed.fb ?? '';
+      out.pw = parsed.pw ?? '';
+    } catch {
+      // not JSON: plain experience text
+    }
+  }
+  return out;
+}
+
+function sameText(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
+}
 
 function getInitialState(): ServerDbState {
   return {
@@ -23,7 +49,6 @@ function getInitialState(): ServerDbState {
         phoneWhatsapp: '+8801337142248',
         country: 'Bangladesh',
         status: 'APPROVED',
-        password: process.env.ADMIN_MASTER_KEY || 'ClipCart@Admin2026!',
         createdAt: '2026-09-01T10:00:00Z',
         updatedAt: '2026-09-01T10:00:00Z',
       },
@@ -48,6 +73,7 @@ function loadState(): ServerDbState {
       const raw = fs.readFileSync(STORAGE_FILE, 'utf8');
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed.profiles)) {
+        parsed.profiles = parsed.profiles.map(({ password: _pw, ...p }: Profile) => p);
         globalThis.__clipcart_server_db = parsed;
         return parsed;
       }
@@ -221,24 +247,7 @@ export const serverAuthStore = {
 
         if (data && data.length > 0) {
           const cp = data[0];
-          let extractedPassword = '';
-          let extractedFacebook = '';
-          let actualExperience = cp.editing_experience || '';
-
-          if (actualExperience && actualExperience.startsWith('{')) {
-            try {
-              const parsed = JSON.parse(actualExperience);
-              if (parsed.pw) extractedPassword = parsed.pw;
-              if (parsed.fb) extractedFacebook = parsed.fb;
-              if (parsed.exp !== undefined) actualExperience = parsed.exp;
-            } catch {
-              // ignore
-            }
-          }
-
-          if (extractedPassword && !profile.password) {
-            profile.password = extractedPassword;
-          }
+          const { exp: actualExperience, fb: extractedFacebook } = parseExperience(cp.editing_experience);
 
           clipperProfile = {
             userId: cp.user_id,
@@ -270,8 +279,82 @@ export const serverAuthStore = {
     return { profile, clipperProfile };
   },
 
-  async registerUser(profile: Profile, clipperProfile: ClipperProfile): Promise<void> {
+  /** Checks a login password against the stored bcrypt hash (Supabase user_credentials, else the local store). */
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
+    if (!userId || !password) return false;
+    const local = loadState().profiles.find(p => p.id === userId);
+
+    let hash: string | undefined;
+    try {
+      const { data } = await supabaseAdmin
+        .from('user_credentials')
+        .select('password_hash')
+        .eq('user_id', userId)
+        .limit(1);
+      hash = data?.[0]?.password_hash;
+    } catch {
+      // fall back to the local store
+    }
+    hash = hash || local?.passwordHash;
+    if (hash) return bcrypt.compare(password, hash);
+
+    // Legacy row with a plain-text password: verify once, then replace it with a hash
+    try {
+      const { data } = await supabaseAdmin
+        .from('clipper_profiles')
+        .select('editing_experience')
+        .eq('user_id', userId)
+        .limit(1);
+      const legacyPw = parseExperience(data?.[0]?.editing_experience).pw;
+      if (legacyPw && sameText(legacyPw, password)) {
+        await this.setPassword(userId, password);
+        return true;
+      }
+    } catch {
+      // Ignore
+    }
+    return false;
+  },
+
+  /** Stores a bcrypt hash for the user; plain text is removed from editing_experience only once the hash is saved. */
+  async setPassword(userId: string, password: string): Promise<void> {
+    const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const state = loadState();
+    const local = state.profiles.find(p => p.id === userId);
+    if (local) {
+      local.passwordHash = passwordHash;
+      saveState(state);
+    }
+
+    const { error } = await supabaseAdmin.from('user_credentials').upsert({
+      user_id: userId,
+      password_hash: passwordHash,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) {
+      console.warn('Supabase user_credentials upsert notice:', error.message);
+      return;
+    }
+
+    const { data } = await supabaseAdmin
+      .from('clipper_profiles')
+      .select('editing_experience')
+      .eq('user_id', userId)
+      .limit(1);
+    const raw = data?.[0]?.editing_experience;
+    if (raw && parseExperience(raw).pw) {
+      const { exp, fb } = parseExperience(raw);
+      await supabaseAdmin
+        .from('clipper_profiles')
+        .update({ editing_experience: JSON.stringify({ exp, fb }) })
+        .eq('user_id', userId);
+    }
+  },
+
+  async registerUser(profile: Profile, clipperProfile: ClipperProfile, password: string): Promise<void> {
+    const state = loadState();
+    const { password: _plain, ...storedProfile } = profile;
+    profile = { ...storedProfile, passwordHash: await bcrypt.hash(password, BCRYPT_ROUNDS) };
 
     // Check existing
     const existingIndex = state.profiles.findIndex(
@@ -309,10 +392,9 @@ export const serverAuthStore = {
         console.warn('Supabase profile upsert notice:', pErr.message);
       }
 
-      // Pack password and facebookHandle safely into editing_experience JSON
+      // facebookHandle has no column of its own, so it rides along in editing_experience JSON
       const experiencePayload = JSON.stringify({
         exp: clipperProfile.editingExperience || '',
-        pw: profile.password || '',
         fb: clipperProfile.facebookHandle || '',
       });
 
@@ -332,6 +414,16 @@ export const serverAuthStore = {
       });
       if (cpErr) {
         console.warn('Supabase clipper_profiles upsert notice:', cpErr.message);
+      }
+
+      // Credentials live in their own table that only the service role can read
+      const { error: credErr } = await supabaseAdmin.from('user_credentials').upsert({
+        user_id: profile.id,
+        password_hash: profile.passwordHash,
+        updated_at: new Date().toISOString(),
+      });
+      if (credErr) {
+        console.warn('Supabase user_credentials upsert notice:', credErr.message);
       }
     } catch (err) {
       console.warn('Supabase registerUser notice:', err);

@@ -114,7 +114,6 @@ export async function POST(req: Request) {
       country: country.slice(0, 50),
       role: 'CLIPPER',       // IMMUTABLE SERVER-ENFORCED ROLE
       status: 'PENDING',     // IMMUTABLE SERVER-ENFORCED STATUS AWAITING ৳50 AUDIT
-      password,
       createdAt: now,
       updatedAt: now,
     };
@@ -140,7 +139,7 @@ export async function POST(req: Request) {
     };
 
     // 4. Persist user to authoritative server store & Supabase
-    await serverAuthStore.registerUser(sanitizedProfile, sanitizedClipperProfile);
+    await serverAuthStore.registerUser(sanitizedProfile, sanitizedClipperProfile, password);
 
     return NextResponse.json({
       success: true,

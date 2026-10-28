@@ -82,11 +82,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Strict Password Validation
-    const isPasswordMatch = profile.password && profile.password === password;
-    const isTrxIdMatch = clipperProfile?.signupTrxId && clipperProfile.signupTrxId.toLowerCase() === password.toLowerCase();
+    // Password only (bcrypt). The signup TrxID is not a password: admins and payment records see it.
+    const isPasswordMatch = await serverAuthStore.verifyPassword(profile.id, password);
 
-    if (!isPasswordMatch && !isTrxIdMatch) {
+    if (!isPasswordMatch) {
       return NextResponse.json(
         { success: false, error: 'Incorrect password. Please verify your password and try again.' },
         { status: 401 }

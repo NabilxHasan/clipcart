@@ -11,7 +11,6 @@ import {
   ExternalLink,
   Sparkles,
   ShieldCheck,
-  KeyRound,
   Trash2,
   Lock,
   RefreshCw
@@ -35,33 +34,8 @@ export default function AdminSettingsPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
 
   // Security & Data Clean Slate
-  const [currentMasterKey, setCurrentMasterKey] = useState('ClipCart@Admin2026!');
-  const [newMasterKey, setNewMasterKey] = useState('');
-  const [keySaved, setKeySaved] = useState(false);
   const [wipeConfirm, setWipeConfirm] = useState(false);
   const [wipeFeedback, setWipeFeedback] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedKey = localStorage.getItem('clipcart_master_passcode');
-      if (storedKey) setCurrentMasterKey(storedKey);
-    }
-  }, []);
-
-  const handleUpdateMasterKey = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMasterKey.trim() || newMasterKey.trim().length < 6) {
-      alert('Master Security Key must be at least 6 characters long.');
-      return;
-    }
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('clipcart_master_passcode', newMasterKey.trim());
-      setCurrentMasterKey(newMasterKey.trim());
-      setNewMasterKey('');
-      setKeySaved(true);
-      setTimeout(() => setKeySaved(false), 3000);
-    }
-  };
 
   const handleClearDemoData = () => {
     mockStore.clearDemoData();
@@ -289,48 +263,13 @@ export default function AdminSettingsPage() {
         </div>
 
         <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
-          This Master Passcode locks the <code>/admin</code> operations desk. Anyone attempting to visit this panel without this key will be blocked by the security gate.
+          The passcode that unlocks the <code>/admin</code> desk is the <code>ADMIN_MASTER_KEY</code> environment variable on Vercel
+          (at least 12 characters). It is checked on the server only and is never shown or stored in the browser.
         </p>
-
-        {keySaved && (
-          <div className="neo-box p-3 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-950 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 text-xs font-bold font-mono flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            <span>Master Security Passcode successfully updated! Save this key in a secure place.</span>
-          </div>
-        )}
-
-        <form onSubmit={handleUpdateMasterKey} className="space-y-4 pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Current Active Key</label>
-              <div className="px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 font-mono text-xs font-bold text-zinc-900 dark:text-white select-all">
-                {currentMasterKey}
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-zinc-700 dark:text-zinc-300 font-bold block text-xs">Set New Master Passcode</label>
-              <input
-                type="text"
-                placeholder="Enter new master key (min 6 chars)..."
-                value={newMasterKey}
-                onChange={(e) => setNewMasterKey(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white font-mono text-xs focus:outline-none focus:shadow-[2px_2px_0px_#e11d48]"
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="submit"
-              disabled={!newMasterKey.trim()}
-              className="neo-btn neo-btn-primary px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Update Master Passcode</span>
-            </button>
-          </div>
-        </form>
+        <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
+          To change it: Vercel → Project → Settings → Environment Variables → edit <code>ADMIN_MASTER_KEY</code>, then redeploy.
+          Changing it signs out every open admin session.
+        </p>
       </div>
 
       {/* Production Database Clean Slate Card */}

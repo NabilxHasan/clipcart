@@ -201,14 +201,15 @@ export default function RegisterPage() {
         console.warn('API sync notice:', apiErr);
       }
 
-      // 4. Update local mockStore
+      // 4. Update local mockStore (the password stays on the server; never keep it in browser storage)
+      const { password: _password, ...storedProfile } = newProfile;
       const existingProfileIdx = mockStore.profiles.findIndex(
-        p => p.email.toLowerCase() === newProfile.email.toLowerCase() || p.id === newProfile.id
+        p => p.email.toLowerCase() === storedProfile.email.toLowerCase() || p.id === storedProfile.id
       );
       if (existingProfileIdx >= 0) {
-        mockStore.profiles[existingProfileIdx] = newProfile;
+        mockStore.profiles[existingProfileIdx] = storedProfile;
       } else {
-        mockStore.profiles.push(newProfile);
+        mockStore.profiles.push(storedProfile);
       }
 
       const existingCpIdx = mockStore.clipperProfiles.findIndex(cp => cp.userId === assignedUserId);
@@ -220,7 +221,7 @@ export default function RegisterPage() {
 
       mockStore.saveToStorage();
       if (typeof window !== 'undefined') {
-        localStorage.setItem('clipcart_active_user', JSON.stringify(newProfile));
+        localStorage.setItem('clipcart_active_user', JSON.stringify(storedProfile));
       }
 
       // Show Mandatory WhatsApp Community Gate instead of direct router.push

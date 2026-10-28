@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -29,6 +29,10 @@ export function CampaignDetailClient({ campaign }: { campaign: Campaign }) {
   const router = useRouter();
   const { t } = useLanguage();
 
+  // "Days left" is computed in the browser: this page is pre-rendered at build time, so a server-side
+  // Date.now() would freeze the countdown at the deploy date.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
   const [platform, setPlatform] = useState<PlatformType>(
     campaign.platforms.length > 0 ? campaign.platforms[0] : 'TIKTOK'
   );
@@ -151,7 +155,7 @@ export function CampaignDetailClient({ campaign }: { campaign: Campaign }) {
           <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]">
             {(() => {
               const endDate = new Date(campaign.endDate);
-              const daysLeft = Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              const daysLeft = now === null ? null : Math.ceil((endDate.getTime() - now) / (1000 * 60 * 60 * 24));
               return (
                 <>
                   <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-bold block uppercase">Ends On</span>
@@ -159,11 +163,11 @@ export function CampaignDetailClient({ campaign }: { campaign: Campaign }) {
                     {endDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                   </span>
                   <span className={`text-[10px] font-bold font-mono block ${
-                    daysLeft <= 2 ? 'text-rose-600 dark:text-rose-400' :
-                    daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' :
+                    daysLeft !== null && daysLeft <= 2 ? 'text-rose-600 dark:text-rose-400' :
+                    daysLeft !== null && daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' :
                     'text-emerald-600 dark:text-emerald-400'
                   }`}>
-                    {daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}
+                    {daysLeft === null ? ' ' : daysLeft > 0 ? `${daysLeft} days left` : 'Ended'}
                   </span>
                 </>
               );

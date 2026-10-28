@@ -18,6 +18,11 @@ import {
   AuditLog,
 } from '../types/database';
 
+// The launch campaign runs for a fixed 30-day window (28 Oct - 26 Nov 2026, Dhaka time), the same for every
+// visitor and every page. To extend it, move LAUNCH_CAMPAIGN_END_DATE.
+export const LAUNCH_CAMPAIGN_START_DATE = '2026-10-28T00:00:00+06:00';
+export const LAUNCH_CAMPAIGN_END_DATE = '2026-11-26T23:59:59+06:00';
+
 export const defaultLaunchCampaign: Campaign = {
   id: 'cmp-launch-01',
   title: 'ClipCart Launch Campaign',
@@ -35,8 +40,8 @@ export const defaultLaunchCampaign: Campaign = {
   maxPayoutPerClip: 500,
   minViews: 500,
   maxViews: 20000,
-  startDate: new Date().toISOString(),
-  endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  startDate: new Date(LAUNCH_CAMPAIGN_START_DATE).toISOString(),
+  endDate: new Date(LAUNCH_CAMPAIGN_END_DATE).toISOString(),
   platforms: ['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK'],
   rules: [
     'ভিডিও অবশ্যই ৯:১৬ ভার্টিক্যাল ফরম্যাটে হতে হবে (২০-৫৮ সেকেন্ড)।',
@@ -164,7 +169,10 @@ class ClipBDStore {
         if (raw) {
           const data = JSON.parse(raw);
           if (Array.isArray(data.profiles) && data.profiles.length) {
-            this.profiles = (data.profiles as Profile[]).filter((p: Profile) => p.id !== 'usr-nabil-01');
+            // Older builds kept plain-text passwords here; drop them from browser storage
+            this.profiles = (data.profiles as Profile[])
+              .filter((p: Profile) => p.id !== 'usr-nabil-01')
+              .map(({ password: _password, ...p }: Profile) => p);
           }
           if (Array.isArray(data.clipperProfiles)) {
             this.clipperProfiles = (data.clipperProfiles as ClipperProfile[]).filter((cp: ClipperProfile) => cp.signupTrxId !== 'DIQ7WUNHRX');
@@ -183,14 +191,11 @@ class ClipBDStore {
           if (Array.isArray(data.auditLogs)) this.auditLogs = data.auditLogs;
         }
 
-        // Ensure active launch campaign is always present with ৳1,000 budget and 30-day duration
-        const thirtyDaysFuture = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        // Ensure active launch campaign is always present with ৳1,000 budget and its fixed 30-day window
+        const launchStart = new Date(LAUNCH_CAMPAIGN_START_DATE).toISOString();
+        const launchEnd = new Date(LAUNCH_CAMPAIGN_END_DATE).toISOString();
         if (!this.campaigns || this.campaigns.length === 0) {
-          this.campaigns = [{
-            ...defaultLaunchCampaign,
-            startDate: new Date().toISOString(),
-            endDate: thirtyDaysFuture,
-          }];
+          this.campaigns = [{ ...defaultLaunchCampaign }];
         } else {
           for (const c of this.campaigns) {
             if (
@@ -203,8 +208,8 @@ class ClipBDStore {
               c.totalBudget = 1000;
               c.remainingBudget = 1000;
               c.status = 'ACTIVE';
-              c.startDate = new Date().toISOString();
-              c.endDate = thirtyDaysFuture;
+              c.startDate = launchStart;
+              c.endDate = launchEnd;
               c.updatedAt = new Date().toISOString();
             }
           }
@@ -213,11 +218,7 @@ class ClipBDStore {
             c => c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign'
           );
           if (!hasLaunch) {
-            this.campaigns.unshift({
-              ...defaultLaunchCampaign,
-              startDate: new Date().toISOString(),
-              endDate: thirtyDaysFuture,
-            });
+            this.campaigns.unshift({ ...defaultLaunchCampaign });
           }
         }
         this.saveToStorage();

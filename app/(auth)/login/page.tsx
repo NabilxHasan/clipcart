@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PlaySquare, ArrowRight, Lock, Mail, AlertCircle } from 'lucide-react';
 import { mockStore } from '../../../lib/db/mock-store';
+import { ClipperProfile, Profile } from '../../../lib/types/database';
 import { useLanguage } from '../../../lib/i18n/context';
 
 export default function LoginPage() {
@@ -35,31 +36,10 @@ export default function LoginPage() {
       return;
     }
 
-    // Helper: Local fallback lookup with phone normalization (e.g. 017... matches +88017...)
-    const findLocalMatch = () => {
-      const digitsId = cleanId.replace(/\D/g, '');
-      const user = mockStore.profiles.find(p => {
-        if (p.email && p.email.toLowerCase() === cleanId.toLowerCase()) return true;
-        if (p.id && p.id.toLowerCase() === cleanId.toLowerCase()) return true;
-        if (p.phoneWhatsapp) {
-          const cleanPhone = p.phoneWhatsapp.replace(/\s+/g, '').toLowerCase();
-          if (cleanPhone === cleanId.toLowerCase() || cleanPhone.includes(cleanId.toLowerCase())) return true;
-          const digitsPhone = p.phoneWhatsapp.replace(/\D/g, '');
-          if (digitsId.length >= 8 && digitsPhone.length >= 8) {
-            if (digitsPhone.endsWith(digitsId) || digitsId.endsWith(digitsPhone)) return true;
-          }
-        }
-        return false;
-      });
-
-      const cp = user ? mockStore.clipperProfiles.find(c => c.userId === user.id) : undefined;
-      return { user, clipperProfile: cp };
-    };
-
     try {
       // 1. Authenticate against Server API
-      let serverUser: any = null;
-      let serverClipperProfile: any = null;
+      let serverUser: Profile | null = null;
+      let serverClipperProfile: ClipperProfile | null = null;
       let serverError: string | null = null;
 
       try {
@@ -80,7 +60,7 @@ export default function LoginPage() {
           serverError = data?.error || null;
         }
       } catch (netErr) {
-        console.warn('Network issue during server auth, falling back to local verification:', netErr);
+        console.warn('Network issue during server auth:', netErr);
       }
 
       // If server authenticated successfully:
@@ -89,21 +69,15 @@ export default function LoginPage() {
           localStorage.setItem('clipcart_active_user', JSON.stringify(serverUser));
         }
 
-        // Sync into local mockStore (preserving local password if server omitted it)
+        // Sync into local mockStore (passwords are verified on the server only, never stored in the browser)
         const idx = mockStore.profiles.findIndex(
           p => p.id === serverUser.id || p.email.toLowerCase() === serverUser.email.toLowerCase()
         );
         if (idx >= 0) {
-          mockStore.profiles[idx] = {
-            ...mockStore.profiles[idx],
-            ...serverUser,
-            password: mockStore.profiles[idx].password || cleanPw,
-          };
+          const { password: _stalePassword, ...existing } = mockStore.profiles[idx];
+          mockStore.profiles[idx] = { ...existing, ...serverUser };
         } else {
-          mockStore.profiles.push({
-            ...serverUser,
-            password: cleanPw,
-          });
+          mockStore.profiles.push(serverUser);
         }
 
         if (serverClipperProfile) {
@@ -120,51 +94,7 @@ export default function LoginPage() {
         return;
       }
 
-      // 2. Server rejected or couldn't find user (e.g. serverless cold start or sync delay).
-      // Check local mockStore before rejecting the user!
-      const { user: localUser, clipperProfile: localCp } = findLocalMatch();
-
-      if (localUser) {
-        const isPasswordMatch = localUser.password && localUser.password === cleanPw;
-        const isTrxIdMatch = localCp?.signupTrxId && localCp.signupTrxId.trim().toLowerCase() === cleanPw.toLowerCase();
-
-        if (isPasswordMatch || isTrxIdMatch) {
-          if (localUser.status === 'BANNED') {
-            setError('This account has been banned due to compliance violations.');
-            setLoading(false);
-            return;
-          }
-          if (localUser.status === 'SUSPENDED') {
-            setError('This account is suspended. Please contact support on WhatsApp.');
-            setLoading(false);
-            return;
-          }
-
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('clipcart_active_user', JSON.stringify(localUser));
-          }
-
-          // Resync this user to the server store in the background so future calls know about it
-          fetch('/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              profile: localUser,
-              clipperProfile: localCp || { userId: localUser.id, signupTrxId: cleanPw },
-            }),
-          }).catch(() => {});
-
-          router.push('/dashboard');
-          return;
-        } else {
-          // User found locally, but password/TrxID didn't match
-          setError('Incorrect password. Please verify your password and try again.');
-          setLoading(false);
-          return;
-        }
-      }
-
-      // Neither server nor local found the user
+      // 2. Server rejected the login (or could not be reached)
       setError(serverError || 'No registered clipper account found for this email or phone number. Please register and complete the ৳50 bKash verification.');
       setLoading(false);
       return;

@@ -1,12 +1,9 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { hasAdminSession } from '@/lib/auth/require-admin';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('clipcart_admin_token')?.value;
-
-    if (token === 'clipcart_admin_authorized_v1') {
+    if (await hasAdminSession()) {
       return NextResponse.json({ authenticated: true });
     }
 

@@ -1,20 +1,8 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
+import { hasAdminSession } from '@/lib/auth/require-admin';
 import { detectSqlInjection } from '@/lib/security/anti-sqli';
-
-async function isAuthorizedAdmin(req: Request): Promise<boolean> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('clipcart_admin_token')?.value;
-  if (token === 'clipcart_admin_authorized_v1') return true;
-
-  const authHeader = req.headers.get('authorization');
-  const expectedKey = process.env.ADMIN_MASTER_KEY || 'ClipCart@Admin2026!';
-  if (authHeader && (authHeader === `Bearer ${expectedKey}` || authHeader === expectedKey)) return true;
-
-  return false;
-}
 
 export async function POST(req: Request) {
   try {
@@ -27,8 +15,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const authorized = await isAuthorizedAdmin(req);
-    if (!authorized) {
+    if (!(await hasAdminSession())) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Admin authentication required to delete accounts.' },
         { status: 401 }

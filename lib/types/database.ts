@@ -29,7 +29,8 @@ export interface Profile {
   phoneWhatsapp?: string;
   country: string;
   status: UserStatus;
-  password?: string;
+  password?: string;      // plain text only on the way in (register form); never stored
+  passwordHash?: string;  // bcrypt, server-side only (lib/auth/server-store.ts)
   createdAt: string;
   updatedAt: string;
 }
