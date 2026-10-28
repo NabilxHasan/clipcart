@@ -53,7 +53,7 @@ export const defaultLaunchCampaign: Campaign = {
     'কপিরাইটযুক্ত সাউন্ড বা অডিও ব্যবহার করা যাবে না যা প্ল্যাটফর্মে মিউট হয়।',
     'অপ্রাসঙ্গিক বা বিভ্রান্তিকর ক্লিকবেইট টাইটেল ব্যবহার করা যাবে না।',
   ],
-  sourceUrl: 'https://drive.google.com/drive/folders/1clipcart-official-assets',
+  sourceUrl: 'https://drive.google.com/drive/folders/1sbIX8ZR-brKXhu8OXLnYIx7cSD2Z9EfH?usp=sharing',
   exampleUrl: 'https://youtube.com/shorts/clipcart-launch-demo',
   createdBy: 'usr-admin-01',
   createdAt: new Date().toISOString(),
@@ -211,6 +211,10 @@ class ClipBDStore {
               c.startDate = launchStart;
               c.endDate = launchEnd;
               c.updatedAt = new Date().toISOString();
+            }
+            // Browsers that saved the launch campaign earlier keep its old footage link; refresh it
+            if (c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign') {
+              c.sourceUrl = defaultLaunchCampaign.sourceUrl;
             }
           }
 
