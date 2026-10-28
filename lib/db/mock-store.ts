@@ -54,7 +54,7 @@ export const defaultLaunchCampaign: Campaign = {
     'অপ্রাসঙ্গিক বা বিভ্রান্তিকর ক্লিকবেইট টাইটেল ব্যবহার করা যাবে না।',
   ],
   sourceUrl: 'https://drive.google.com/drive/folders/1sbIX8ZR-brKXhu8OXLnYIx7cSD2Z9EfH?usp=sharing',
-  exampleUrl: 'https://youtube.com/shorts/clipcart-launch-demo',
+  exampleUrl: 'https://www.instagram.com/clipcartbd/reel/DfCevivBc-6/',
   createdBy: 'usr-admin-01',
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
@@ -212,9 +212,10 @@ class ClipBDStore {
               c.endDate = launchEnd;
               c.updatedAt = new Date().toISOString();
             }
-            // Browsers that saved the launch campaign earlier keep its old footage link; refresh it
+            // Browsers that saved the launch campaign earlier keep its old links; refresh them
             if (c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign') {
               c.sourceUrl = defaultLaunchCampaign.sourceUrl;
+              c.exampleUrl = defaultLaunchCampaign.exampleUrl;
             }
           }
 

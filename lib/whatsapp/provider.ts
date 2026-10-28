@@ -77,7 +77,7 @@ export class ManualWhatsAppProvider implements NotificationProvider {
       .replace('{{budget}}', campaign.totalBudget.toLocaleString('en-US'))
       .replace('{{cpm}}', campaign.cpmRate ? campaign.cpmRate.toString() : 'Fixed')
       .replace('{{platforms}}', campaign.platforms.join(', '))
-      .replace('{{url}}', `${process.env.NEXT_PUBLIC_SITE_URL || 'https://clipcart.com'}/campaigns/${campaign.slug}`);
+      .replace('{{url}}', `${process.env.NEXT_PUBLIC_SITE_URL || 'https://clipcart.bd'}/campaigns/${campaign.slug}`);
 
     return {
       recipientName: 'ClipCart Community',
