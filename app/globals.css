@@ -18,6 +18,12 @@
     --status-red: #dc2626;
     --status-neutral: #52525b;
 
+    /* Self-hosted families from the @fontsource packages imported in app/layout.tsx */
+    --font-space-grotesk: 'Space Grotesk Variable', 'Space Grotesk';
+    --font-unbounded: 'Unbounded Variable', 'Unbounded';
+    --font-jetbrains-mono: 'JetBrains Mono Variable', 'JetBrains Mono';
+    --font-hind-siliguri: 'Hind Siliguri';
+
     --font-display: var(--font-unbounded, 'Unbounded'), system-ui, sans-serif;
     --font-body: var(--font-space-grotesk, 'Space Grotesk'), var(--font-hind-siliguri, 'Hind Siliguri'), system-ui, sans-serif;
     --font-mono: var(--font-jetbrains-mono, 'JetBrains Mono'), monospace;

@@ -1,5 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Space_Grotesk, Unbounded, JetBrains_Mono, Hind_Siliguri } from 'next/font/google';
+// Fonts are bundled from npm (Fontsource) instead of next/font/google, so builds never download from
+// Google Fonts (its occasional extensionless file URLs crashed Vercel builds). Family names are mapped to
+// the --font-* variables in globals.css.
+import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/unbounded';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource/hind-siliguri/400.css';
+import '@fontsource/hind-siliguri/500.css';
+import '@fontsource/hind-siliguri/600.css';
+import '@fontsource/hind-siliguri/700.css';
 import './globals.css';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
@@ -8,34 +17,6 @@ import { ThemeProvider } from '../lib/theme/context';
 import { CuteDoodleBackground } from '../components/shared/CuteDoodleBackground';
 import { JsonLd } from '../components/seo/JsonLd';
 import { getOrganizationSchema, getWebSiteSchema } from '../lib/seo/schema';
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
-});
-
-const unbounded = Unbounded({
-  subsets: ['latin'],
-  weight: ['600', '700', '800', '900'],
-  variable: '--font-unbounded',
-  display: 'swap',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-});
-
-const hindSiliguri = Hind_Siliguri({
-  subsets: ['bengali', 'latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-hind-siliguri',
-  display: 'swap',
-});
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://clipcart.bd';
 
@@ -121,7 +102,7 @@ export default function RootLayout({
         <JsonLd schema={[getOrganizationSchema(), getWebSiteSchema()]} />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${unbounded.variable} ${jetbrainsMono.variable} ${hindSiliguri.variable} relative flex flex-col min-h-screen bg-[#fafafc] dark:bg-[#0c0d10] text-zinc-900 dark:text-zinc-100 selection:bg-rose-600 selection:text-white font-['Space_Grotesk'] antialiased transition-colors duration-200`}
+        className={`relative flex flex-col min-h-screen bg-[#fafafc] dark:bg-[#0c0d10] text-zinc-900 dark:text-zinc-100 selection:bg-rose-600 selection:text-white font-['Space_Grotesk'] antialiased transition-colors duration-200`}
       >
         <ThemeProvider>
           <LanguageProvider>
