@@ -20,6 +20,7 @@ import { Campaign } from '../../lib/types/database';
 import { StatusBadge } from '../shared/StatusBadge';
 import { useLanguage } from '../../lib/i18n/context';
 import { ClipBDRepository } from '../../lib/db/repository';
+import { ExplainerVideo } from './ExplainerVideo';
 
 export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] }) {
   const { t, lang } = useLanguage();
@@ -198,7 +199,9 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
         </div>
       </div>
 
-      {/* 3. INTERACTIVE FLEXIBLE CAMPAIGN CALCULATOR (Bangladesh Friendly) */}
+      {/* 2b. EXPLAINER VIDEO (YouTube: What is clipping?) */}
+      <ExplainerVideo />
+
       {/* 3. INTERACTIVE FLEXIBLE CAMPAIGN CALCULATOR (Bangladesh Friendly) */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="neo-box-lg bg-white dark:bg-[#14151a] p-6 sm:p-10 space-y-8">
