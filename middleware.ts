@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { ADMIN_COOKIE, verifyAdminSessionToken } from './lib/auth/admin-session';
 
 // Admin-only APIs: rejected here unless the request carries a valid signed admin session.
-const ADMIN_API_PATHS = new Set(['/api/auth/users', '/api/auth/delete-user']);
+const ADMIN_API_PATHS = new Set(['/api/auth/users', '/api/auth/delete-user', '/api/auth/reset-password']);
 
 function applySecurityHeaders(res: NextResponse): NextResponse {
   res.headers.set('X-Content-Type-Options', 'nosniff');
@@ -39,5 +39,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/auth/users', '/api/auth/delete-user'],
+  matcher: ['/admin/:path*', '/api/auth/users', '/api/auth/delete-user', '/api/auth/reset-password'],
 };

@@ -13,9 +13,8 @@ export async function GET() {
       );
     }
 
-    // Credentials never leave the server, not even to admins
-    const profiles = serverAuthStore.getProfiles().map(({ password: _pw, passwordHash: _hash, ...rest }) => rest);
-    const clipperProfiles = serverAuthStore.getClipperProfiles();
+    // Every account from the database (credentials never leave the server, not even to admins)
+    const { profiles, clipperProfiles } = await serverAuthStore.listUsers();
 
     return NextResponse.json({
       success: true,
@@ -64,7 +63,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const updated = serverAuthStore.updateStatus(userId, status);
+    const updated = await serverAuthStore.updateStatus(userId, status);
 
     return NextResponse.json({
       success: updated,

@@ -14,6 +14,11 @@ interface ServerDbState {
 
 const STORAGE_FILE = path.join(os.tmpdir(), 'clipcart_users_store_v1.json');
 const BCRYPT_ROUNDS = 10;
+// With the service-role key configured (production), Supabase is the source of truth: a failed write
+// fails the request instead of leaving the account only in this instance's temporary store.
+const DB_REQUIRED = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
+const PROFILE_COLUMNS = 'id, email, role, full_name, phone_whatsapp, country, status, created_at, updated_at';
+const CLIPPER_COLUMNS = 'user_id, tiktok_handle, instagram_handle, youtube_handle, preferred_platforms, editing_experience, portfolio_url, payment_method, payment_identifier, signup_trx_id, signup_payment_method, approved_views_total, approved_earnings_total, approved_clips_total, created_at, updated_at';
 
 // clipper_profiles.editing_experience holds JSON {exp, fb}. Older rows also packed a plain-text "pw" in it;
 // those are converted to a bcrypt hash in user_credentials (migration 004, or on that user's next login).
@@ -104,6 +109,57 @@ export const serverAuthStore = {
 
   getClipperProfiles(): ClipperProfile[] {
     return loadState().clipperProfiles;
+  },
+
+  /** All accounts for the admin directory: Supabase rows merged over this instance's store. No credentials. */
+  async listUsers(): Promise<{ profiles: Profile[]; clipperProfiles: ClipperProfile[] }> {
+    const state = loadState();
+    const profiles = new Map(state.profiles.map(({ password: _pw, passwordHash: _h, ...p }) => [p.id, p as Profile]));
+    const clippers = new Map(state.clipperProfiles.map(cp => [cp.userId, cp]));
+    try {
+      const [{ data: pRows }, { data: cRows }] = await Promise.all([
+        supabaseAdmin.from('profiles').select(PROFILE_COLUMNS),
+        supabaseAdmin.from('clipper_profiles').select(CLIPPER_COLUMNS),
+      ]);
+      for (const r of pRows ?? []) {
+        profiles.set(r.id, {
+          id: r.id,
+          email: r.email,
+          role: r.role,
+          fullName: r.full_name,
+          phoneWhatsapp: r.phone_whatsapp,
+          country: r.country || 'Bangladesh',
+          status: r.status,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+        });
+      }
+      for (const cp of cRows ?? []) {
+        const { exp, fb } = parseExperience(cp.editing_experience);
+        clippers.set(cp.user_id, {
+          userId: cp.user_id,
+          tiktokHandle: cp.tiktok_handle,
+          instagramHandle: cp.instagram_handle,
+          youtubeHandle: cp.youtube_handle,
+          facebookHandle: fb,
+          preferredPlatforms: cp.preferred_platforms || [],
+          editingExperience: exp,
+          portfolioUrl: cp.portfolio_url,
+          paymentMethod: cp.payment_method || 'BKASH',
+          paymentIdentifier: cp.payment_identifier,
+          signupTrxId: cp.signup_trx_id,
+          signupPaymentMethod: cp.signup_payment_method || 'BKASH',
+          approvedViewsTotal: Number(cp.approved_views_total || 0),
+          approvedEarningsTotal: Number(cp.approved_earnings_total || 0),
+          approvedClipsTotal: Number(cp.approved_clips_total || 0),
+          createdAt: cp.created_at,
+          updatedAt: cp.updated_at,
+        });
+      }
+    } catch (err) {
+      console.warn('Supabase listUsers notice:', err);
+    }
+    return { profiles: [...profiles.values()], clipperProfiles: [...clippers.values()] };
   },
 
   async findUser(identifier: string): Promise<{ profile: Profile; clipperProfile?: ClipperProfile } | null> {
@@ -316,8 +372,9 @@ export const serverAuthStore = {
     return false;
   },
 
-  /** Stores a bcrypt hash for the user; plain text is removed from editing_experience only once the hash is saved. */
-  async setPassword(userId: string, password: string): Promise<void> {
+  /** Stores a bcrypt hash for the user; plain text is removed from editing_experience only once the hash is saved.
+   *  Returns false when the hash could not be saved where logins read it. */
+  async setPassword(userId: string, password: string): Promise<boolean> {
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     const state = loadState();
     const local = state.profiles.find(p => p.id === userId);
@@ -333,7 +390,7 @@ export const serverAuthStore = {
     });
     if (error) {
       console.warn('Supabase user_credentials upsert notice:', error.message);
-      return;
+      return !DB_REQUIRED;
     }
 
     const { data } = await supabaseAdmin
@@ -349,6 +406,7 @@ export const serverAuthStore = {
         .update({ editing_experience: JSON.stringify({ exp, fb }) })
         .eq('user_id', userId);
     }
+    return true;
   },
 
   async registerUser(profile: Profile, clipperProfile: ClipperProfile, password: string): Promise<void> {
@@ -391,6 +449,7 @@ export const serverAuthStore = {
       if (pErr) {
         console.warn('Supabase profile upsert notice:', pErr.message);
       }
+      const failures: string[] = pErr ? [`profiles: ${pErr.message}`] : [];
 
       // facebookHandle has no column of its own, so it rides along in editing_experience JSON
       const experiencePayload = JSON.stringify({
@@ -414,6 +473,7 @@ export const serverAuthStore = {
       });
       if (cpErr) {
         console.warn('Supabase clipper_profiles upsert notice:', cpErr.message);
+        failures.push(`clipper_profiles: ${cpErr.message}`);
       }
 
       // Credentials live in their own table that only the service role can read
@@ -424,9 +484,20 @@ export const serverAuthStore = {
       });
       if (credErr) {
         console.warn('Supabase user_credentials upsert notice:', credErr.message);
+        failures.push(`user_credentials: ${credErr.message}`);
       }
+      if (failures.length) throw new Error(failures.join('; '));
     } catch (err) {
-      console.warn('Supabase registerUser notice:', err);
+      console.error('Supabase registerUser failed:', err);
+      if (DB_REQUIRED) {
+        // Never leave a half-saved account (e.g. a profile without its TrxID or password): undo and fail
+        await supabaseAdmin.from('profiles').delete().eq('id', profile.id);
+        const s2 = loadState();
+        s2.profiles = s2.profiles.filter(p => p.id !== profile.id);
+        s2.clipperProfiles = s2.clipperProfiles.filter(cp => cp.userId !== profile.id);
+        saveState(s2);
+        throw new Error('Registration could not be saved. Please try again in a minute.');
+      }
     }
   },
 
@@ -483,27 +554,28 @@ export const serverAuthStore = {
     return false;
   },
 
-  updateStatus(userId: string, status: UserStatus): boolean {
+  /** Admin status change. Writes Supabase directly, so it works for users this instance has never loaded. */
+  async updateStatus(userId: string, status: UserStatus): Promise<boolean> {
     const state = loadState();
+    const updatedAt = new Date().toISOString();
     const p = state.profiles.find(u => u.id === userId);
     if (p) {
       p.status = status;
-      p.updatedAt = new Date().toISOString();
+      p.updatedAt = updatedAt;
       saveState(state);
-
-      // Persist to Supabase so status survives server restarts (fire-and-forget)
-      Promise.resolve(
-        supabaseAdmin
-          .from('profiles')
-          .update({ status, updated_at: p.updatedAt })
-          .eq('id', userId)
-      ).then(({ error }) => {
-        if (error) console.error('Supabase updateStatus error:', error.message);
-      }).catch((err: unknown) => console.error('Supabase updateStatus exception:', err));
-
-      return true;
     }
-    return false;
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .update({ status, updated_at: updatedAt })
+        .eq('id', userId)
+        .select('id');
+      if (error) console.error('Supabase updateStatus error:', error.message);
+      if (!error && data && data.length > 0) return true;
+    } catch (err) {
+      console.error('Supabase updateStatus exception:', err);
+    }
+    return Boolean(p) && !DB_REQUIRED;
   },
 
   clearAllData(): void {

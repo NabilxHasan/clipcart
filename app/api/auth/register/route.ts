@@ -124,7 +124,14 @@ export async function POST(req: Request) {
       instagramHandle: rawClipper?.instagramHandle?.trim()?.slice(0, 100) || undefined,
       youtubeHandle: rawClipper?.youtubeHandle?.trim()?.slice(0, 100) || undefined,
       facebookHandle: rawClipper?.facebookHandle?.trim()?.slice(0, 100) || undefined,
-      preferredPlatforms: Array.isArray(rawClipper?.preferredPlatforms) ? rawClipper.preferredPlatforms : ['TIKTOK', 'YOUTUBE', 'FACEBOOK'],
+      preferredPlatforms: (() => {
+        // Only values the database's platform_type enum accepts (migration 005 added FACEBOOK)
+        const allowed = ['TIKTOK', 'INSTAGRAM', 'YOUTUBE', 'FACEBOOK'] as const;
+        const picked = Array.isArray(rawClipper?.preferredPlatforms)
+          ? allowed.filter(p => rawClipper.preferredPlatforms.includes(p))
+          : [];
+        return picked.length ? picked : ['TIKTOK', 'YOUTUBE', 'FACEBOOK'];
+      })(),
       editingExperience: rawClipper?.editingExperience?.trim()?.slice(0, 500) || undefined,
       portfolioUrl: rawClipper?.portfolioUrl?.trim()?.slice(0, 500) || undefined,
       paymentMethod: rawClipper?.paymentMethod === 'BANK' ? 'BANK' : 'BKASH',

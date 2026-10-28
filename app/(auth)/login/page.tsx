@@ -10,7 +10,7 @@ import { useLanguage } from '../../../lib/i18n/context';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -168,6 +168,21 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full pl-10 pr-3.5 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs shadow-[2px_2px_0px_#09090b] dark:shadow-[2px_2px_0px_#000000]"
             />
+          </div>
+          {/* No email delivery yet: support verifies the clipper on WhatsApp and sends a temporary password */}
+          <div className="flex justify-end">
+            <a
+              href={`https://wa.me/8801337142248?text=${encodeURIComponent(
+                lang === 'bn'
+                  ? `হ্যালো ClipCart, আমি আমার পাসওয়ার্ড ভুলে গেছি। আমার রেজিস্টার করা ইমেইল/ফোন: ${identifier.trim()}`
+                  : `Hi ClipCart, I forgot my password. My registered email/phone: ${identifier.trim()}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:underline"
+            >
+              {lang === 'bn' ? 'পাসওয়ার্ড ভুলে গেছেন? WhatsApp-এ সাপোর্ট নিন' : 'Forgot password? Get help on WhatsApp'}
+            </a>
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import { ClipperProfile, PaymentMethod } from '../../../lib/types/database';
 import { useRouter } from 'next/navigation';
 import { getActiveUser, deleteLocalUser } from '../../../lib/auth/session';
 import { useLanguage } from '../../../lib/i18n/context';
+import { ChangePasswordCard } from '../../../components/dashboard/ChangePasswordCard';
 
 export default function ClipperProfilePage() {
   const router = useRouter();
@@ -271,6 +272,8 @@ export default function ClipperProfilePage() {
           </button>
         </div>
       </form>
+
+      <ChangePasswordCard />
 
       {/* Danger Zone: Permanent Account Deletion */}
       <div className="neo-box p-6 border-2 border-rose-600 bg-rose-50/60 dark:bg-rose-950/20 space-y-3">
