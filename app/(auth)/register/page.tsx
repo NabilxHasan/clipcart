@@ -347,7 +347,7 @@ export default function RegisterPage() {
                 {t.registerPage.stickerZeroFee}
               </span>
               <span className="neo-sticker bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-zinc-950 dark:border-zinc-700 rotate-[-1deg]">
-                {t.registerPage.stickerAntiBot}
+                {feeWaived ? t.registerPage.foundingBadge.replace('{n}', fmt(foundingOffer.spotsLeft)) : t.registerPage.stickerAntiBot}
               </span>
             </div>
           </div>
