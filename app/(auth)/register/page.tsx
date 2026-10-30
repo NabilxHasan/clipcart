@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Lock, PlaySquare, MessageCircle, CheckCircle2, AlertTriangle, Copy } from 'lucide-react';
@@ -8,6 +8,7 @@ import { PlatformType, PaymentMethod, Profile, ClipperProfile } from '../../../l
 import { mockStore } from '../../../lib/db/mock-store';
 import { useLanguage } from '../../../lib/i18n/context';
 import { validateEmail } from '../../../lib/validation/email';
+import { FoundingOffer } from '../../../lib/founding';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,6 +76,22 @@ export default function RegisterPage() {
   const [signupTrxId, setSignupTrxId] = useState('');
   const [copiedBkash, setCopiedBkash] = useState(false);
 
+  // Founding clipper offer: the server waives the ৳50 fee while spots are left (null = still checking)
+  const [foundingOffer, setFoundingOffer] = useState<FoundingOffer | null>(null);
+  const [registeredFounding, setRegisteredFounding] = useState(false);
+  const feeWaived = foundingOffer?.open === true;
+  const fmt = (n: number) => (lang === 'bn' ? n.toLocaleString('bn-BD') : String(n));
+
+  const loadFoundingOffer = () =>
+    fetch('/api/founding-offer', { cache: 'no-store' })
+      .then(r => r.json())
+      .then((o: FoundingOffer) => setFoundingOffer(o))
+      .catch(() => setFoundingOffer({ open: false, spotsLeft: 0, limit: 50 }));
+
+  useEffect(() => {
+    loadFoundingOffer();
+  }, []);
+
   const copyBkashNumber = () => {
     navigator.clipboard.writeText('+8801882480457');
     setCopiedBkash(true);
@@ -120,7 +137,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (signupPaymentMethod === 'NAGAD') {
+    if (!feeWaived && signupPaymentMethod === 'NAGAD') {
       setError(
         'Nagad is currently not available. Please send the ৳50 verification fee via bKash to +8801882480457.'
       );
@@ -128,7 +145,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!signupTrxId.trim() || signupTrxId.trim().length < 6) {
+    if (!feeWaived && (!signupTrxId.trim() || signupTrxId.trim().length < 6)) {
       setError(
         'Please provide a valid ৳50 verification Transaction ID (TrxID) from bKash (Sent to +8801882480457).'
       );
@@ -165,7 +182,7 @@ export default function RegisterPage() {
         portfolioUrl: portfolioUrl.trim() || undefined,
         paymentMethod,
         paymentIdentifier: paymentIdentifier.trim(),
-        signupTrxId: signupTrxId.trim().toUpperCase(),
+        signupTrxId: feeWaived ? '' : signupTrxId.trim().toUpperCase(), // the server assigns founding spots
         signupPaymentMethod,
         approvedViewsTotal: 0,
         approvedEarningsTotal: 0,
@@ -188,9 +205,11 @@ export default function RegisterPage() {
         const data = await res.json();
         if (!res.ok || !data.success) {
           setError(data.error || 'Registration failed');
+          if (feeWaived) loadFoundingOffer(); // the last founding spot may have just gone
           setLoading(false);
           return;
         }
+        setRegisteredFounding(data.founding === true);
 
         if (data.user?.id) {
           assignedUserId = data.user.id;
@@ -257,7 +276,9 @@ export default function RegisterPage() {
               {t.registerPage.gateTitle}
             </h2>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto font-['Space_Grotesk'] leading-relaxed">
-              {t.registerPage.gateWelcome.replace('{name}', fullName).replace('{trxId}', signupTrxId)}
+              {registeredFounding
+                ? t.registerPage.gateWelcomeFounding.replace('{name}', fullName)
+                : t.registerPage.gateWelcome.replace('{name}', fullName).replace('{trxId}', signupTrxId)}
             </p>
           </div>
 
@@ -619,95 +640,118 @@ export default function RegisterPage() {
               </p>
             </div>
 
-            {/* Section 4: One-time ৳50 Sign-up Verification Fee */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-700 pb-2">
-                <h2 className="text-xs font-['Unbounded'] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-black">
-                  {t.registerPage.step4Title}
-                </h2>
-                <span className="neo-sticker bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-zinc-950 dark:border-zinc-700 text-[10px]">
-                  {t.registerPage.oneTimeBadge}
-                </span>
+            {/* Section 4: Founding clipper offer (free) while spots are left, otherwise the one-time ৳50 fee */}
+            {foundingOffer === null ? (
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-xs text-zinc-500 dark:text-zinc-400 font-['Space_Grotesk']">
+                {t.registerPage.foundingChecking}
               </div>
-
-              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 space-y-3 font-['Space_Grotesk']">
-                <div className="space-y-1 text-xs">
-                  <span className="font-bold text-zinc-950 dark:text-white block">{t.registerPage.whyFeeTitle}</span>
-                  <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    {t.registerPage.whyFeeDesc}
+            ) : feeWaived ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-700 pb-2">
+                  <h2 className="text-xs font-['Unbounded'] uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-black">
+                    {t.registerPage.foundingTitle}
+                  </h2>
+                  <span className="neo-sticker bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-zinc-950 dark:border-zinc-700 text-[10px]">
+                    {t.registerPage.foundingBadge.replace('{n}', fmt(foundingOffer.spotsLeft))}
+                  </span>
+                </div>
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border-2 border-zinc-950 dark:border-zinc-700 flex items-start gap-3 font-['Space_Grotesk'] text-xs">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                    {t.registerPage.foundingDesc.replace('{limit}', fmt(foundingOffer.limit))}
                   </p>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 border-2 border-zinc-950 dark:border-zinc-700 text-xs space-y-2.5 font-['JetBrains_Mono']">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0"></span>
-                      <span className="text-zinc-700 dark:text-zinc-200 font-bold">{t.registerPage.bkashSendMoney}</span>
-                      <span className="font-black text-rose-600 dark:text-rose-400 text-sm tracking-wide select-all">+8801882480457</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={copyBkashNumber}
-                      className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-white dark:bg-zinc-800 border border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-rose-100 dark:hover:bg-zinc-700 flex items-center justify-center gap-1.5 self-start sm:self-auto transition-colors cursor-pointer shadow-[1px_1px_0px_#09090b] dark:shadow-[1px_1px_0px_#000000]"
-                    >
-                      {copiedBkash ? (
-                        <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          <span className="text-emerald-700 dark:text-emerald-400">{t.registerPage.copied}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
-                          <span>{t.registerPage.copy}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <div className="flex justify-between items-center px-1">
-                    <span className="text-zinc-500 dark:text-zinc-400 font-bold">{t.registerPage.nagadSendMoney}</span>
-                    <span className="font-bold text-amber-700 dark:text-amber-300 text-[11px] bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">
-                      {t.registerPage.nagadNotice}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-1.5 border-t border-zinc-200 dark:border-zinc-800 px-1">
-                    <span>{t.registerPage.referenceLabel}</span>
-                    <span className="font-bold text-zinc-800 dark:text-zinc-200">CLIP</span>
-                  </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b-2 border-zinc-950 dark:border-zinc-700 pb-2">
+                  <h2 className="text-xs font-['Unbounded'] uppercase tracking-wider text-rose-600 dark:text-rose-400 font-black">
+                    {t.registerPage.step4Title}
+                  </h2>
+                  <span className="neo-sticker bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border-zinc-950 dark:border-zinc-700 text-[10px]">
+                    {t.registerPage.oneTimeBadge}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
-                      {t.registerPage.feeSentViaLabel}
-                    </label>
-                    <select
-                      value={signupPaymentMethod}
-                      onChange={(e) => setSignupPaymentMethod(e.target.value as 'BKASH' | 'NAGAD')}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white focus:outline-none text-xs font-['JetBrains_Mono'] font-bold"
-                    >
-                      <option value="BKASH">{t.registerPage.bkashOptionText}</option>
-                      <option value="NAGAD" disabled>{t.registerPage.channelNagadDisabled}</option>
-                    </select>
+                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 space-y-3 font-['Space_Grotesk']">
+                  <div className="space-y-1 text-xs">
+                    <span className="font-bold text-zinc-950 dark:text-white block">{t.registerPage.whyFeeTitle}</span>
+                    <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                      {t.registerPage.whyFeeDesc}
+                    </p>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
-                      {t.registerPage.trxIdLabel} <span className="text-rose-600 dark:text-rose-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder={t.registerPage.trxIdPlaceholder}
-                      value={signupTrxId}
-                      onChange={(e) => setSignupTrxId(e.target.value.toUpperCase())}
-                      className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider"
-                    />
+                  <div className="p-3.5 rounded-xl bg-white dark:bg-zinc-950 border-2 border-zinc-950 dark:border-zinc-700 text-xs space-y-2.5 font-['JetBrains_Mono']">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0"></span>
+                        <span className="text-zinc-700 dark:text-zinc-200 font-bold">{t.registerPage.bkashSendMoney}</span>
+                        <span className="font-black text-rose-600 dark:text-rose-400 text-sm tracking-wide select-all">+8801882480457</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={copyBkashNumber}
+                        className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-white dark:bg-zinc-800 border border-zinc-950 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 hover:bg-rose-100 dark:hover:bg-zinc-700 flex items-center justify-center gap-1.5 self-start sm:self-auto transition-colors cursor-pointer shadow-[1px_1px_0px_#09090b] dark:shadow-[1px_1px_0px_#000000]"
+                      >
+                        {copiedBkash ? (
+                          <>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                            <span className="text-emerald-700 dark:text-emerald-400">{t.registerPage.copied}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5 text-zinc-600 dark:text-zinc-400" />
+                            <span>{t.registerPage.copy}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-center px-1">
+                      <span className="text-zinc-500 dark:text-zinc-400 font-bold">{t.registerPage.nagadSendMoney}</span>
+                      <span className="font-bold text-amber-700 dark:text-amber-300 text-[11px] bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">
+                        {t.registerPage.nagadNotice}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between text-[11px] text-zinc-500 dark:text-zinc-400 pt-1.5 border-t border-zinc-200 dark:border-zinc-800 px-1">
+                      <span>{t.registerPage.referenceLabel}</span>
+                      <span className="font-bold text-zinc-800 dark:text-zinc-200">CLIP</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div className="space-y-1.5">
+                      <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
+                        {t.registerPage.feeSentViaLabel}
+                      </label>
+                      <select
+                        value={signupPaymentMethod}
+                        onChange={(e) => setSignupPaymentMethod(e.target.value as 'BKASH' | 'NAGAD')}
+                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white focus:outline-none text-xs font-['JetBrains_Mono'] font-bold"
+                      >
+                        <option value="BKASH">{t.registerPage.bkashOptionText}</option>
+                        <option value="NAGAD" disabled>{t.registerPage.channelNagadDisabled}</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-zinc-800 dark:text-zinc-200 font-bold block font-['Space_Grotesk']">
+                        {t.registerPage.trxIdLabel} <span className="text-rose-600 dark:text-rose-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder={t.registerPage.trxIdPlaceholder}
+                        value={signupTrxId}
+                        onChange={(e) => setSignupTrxId(e.target.value.toUpperCase())}
+                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-zinc-900 border-2 border-zinc-950 dark:border-zinc-700 text-zinc-950 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none font-['JetBrains_Mono'] text-xs font-bold uppercase tracking-wider"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="pt-4 border-t-2 border-zinc-950 dark:border-zinc-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <Link href="/login" className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-['Space_Grotesk'] font-medium">

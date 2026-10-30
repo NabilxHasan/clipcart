@@ -5,6 +5,7 @@ import { Users, Shield, CheckCircle2, KeyRound, Copy, MessageCircle, X } from 'l
 import { mockStore } from '../../../lib/db/mock-store';
 import { ClipperProfile, Profile, UserRole, UserStatus } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
+import { isFoundingTrxId } from '../../../lib/founding';
 
 export default function AdminUsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -218,7 +219,7 @@ Log in at https://clipcart.bd/login and change it from your Profile page.`;
             </span>
           </div>
           <span className="text-[11px] font-mono font-bold text-zinc-500 dark:text-zinc-400">
-            Anti-Bot ৳50 bKash Verification
+            Approve new clippers: ৳50 bKash TrxID or free founding spot
           </span>
         </div>
 
@@ -227,7 +228,7 @@ Log in at https://clipcart.bd/login and change it from your Profile page.`;
             <thead className="border-b-2.5 border-zinc-950 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 font-mono text-[11px] uppercase font-bold">
               <tr>
                 <th className="py-3 px-4">User & Contact</th>
-                <th className="py-3 px-4">৳50 bKash TrxID</th>
+                <th className="py-3 px-4">Sign-up (৳50 TrxID / Founding)</th>
                 <th className="py-3 px-4">Role</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Joined Date</th>
@@ -238,6 +239,7 @@ Log in at https://clipcart.bd/login and change it from your Profile page.`;
               {profiles.map(p => {
                 const clipperData = clipperProfiles.find(cp => cp.userId === p.id) ?? mockStore.clipperProfiles.find(cp => cp.userId === p.id);
                 const isPending = p.status === 'PENDING';
+                const isFounding = isFoundingTrxId(clipperData?.signupTrxId);
 
                 return (
                   <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-850 transition-colors">
@@ -250,7 +252,11 @@ Log in at https://clipcart.bd/login and change it from your Profile page.`;
                     </td>
 
                     <td className="py-3.5 px-4">
-                      {clipperData?.signupTrxId ? (
+                      {isFounding ? (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-900 dark:border-emerald-800 font-mono text-[11px] font-bold text-emerald-900 dark:text-emerald-200">
+                          <span>FREE · Founding spot</span>
+                        </div>
+                      ) : clipperData?.signupTrxId ? (
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 border border-rose-950 dark:border-rose-800 font-mono text-[11px] font-bold text-rose-900 dark:text-rose-200">
                           <span>TrxID:</span>
                           <span className="font-black text-rose-600 dark:text-rose-400 select-all">{clipperData.signupTrxId}</span>
@@ -292,7 +298,7 @@ Log in at https://clipcart.bd/login and change it from your Profile page.`;
                             className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-['Unbounded'] font-bold text-[10px] uppercase border border-zinc-950 shadow-[2px_2px_0px_#09090b] flex items-center gap-1 cursor-pointer transition-all active:translate-x-[1px] active:translate-y-[1px]"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Verify ৳50</span>
+                            <span>{isFounding ? 'Approve' : 'Verify ৳50'}</span>
                           </button>
                         )}
                         {p.role !== 'SUPER_ADMIN' && p.role !== 'ADMIN' && (

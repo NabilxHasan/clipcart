@@ -5,6 +5,8 @@ import { Profile, ClipperProfile } from '@/lib/types/database';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
 import { validateEmail } from '@/lib/validation/email';
 import { detectSqlInjection } from '@/lib/security/anti-sqli';
+import { isFoundingTrxId } from '@/lib/founding';
+import { getFoundingOffer, newFoundingTrxId } from '@/lib/founding-server';
 
 export async function POST(req: Request) {
   try {
@@ -84,7 +86,13 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!signupTrxId || signupTrxId.length < 6) {
+    // ৳50 verification fee: waived while founding spots are left. Decided here from the database,
+    // never by the client; a client-sent "FOUNDING-" ID would let someone skip the fee.
+    let founding = false;
+    if (!signupTrxId) {
+      founding = (await getFoundingOffer()).open;
+    }
+    if (!founding && (!signupTrxId || signupTrxId.length < 6 || isFoundingTrxId(signupTrxId))) {
       return NextResponse.json(
         { success: false, error: 'A valid ৳50 bKash verification TrxID is required.' },
         { status: 400 }
@@ -113,7 +121,7 @@ export async function POST(req: Request) {
       phoneWhatsapp: phoneWhatsapp ? phoneWhatsapp.slice(0, 30) : undefined,
       country: country.slice(0, 50),
       role: 'CLIPPER',       // IMMUTABLE SERVER-ENFORCED ROLE
-      status: 'PENDING',     // IMMUTABLE SERVER-ENFORCED STATUS AWAITING ৳50 AUDIT
+      status: 'PENDING',     // IMMUTABLE SERVER-ENFORCED STATUS: an admin approves every new clipper
       createdAt: now,
       updatedAt: now,
     };
@@ -136,7 +144,7 @@ export async function POST(req: Request) {
       portfolioUrl: rawClipper?.portfolioUrl?.trim()?.slice(0, 500) || undefined,
       paymentMethod: rawClipper?.paymentMethod === 'BANK' ? 'BANK' : 'BKASH',
       paymentIdentifier: rawClipper?.paymentIdentifier?.trim()?.slice(0, 100) || '',
-      signupTrxId,
+      signupTrxId: founding ? newFoundingTrxId() : signupTrxId!,
       signupPaymentMethod: 'BKASH',
       approvedViewsTotal: 0,
       approvedEarningsTotal: 0,
@@ -150,6 +158,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      founding,
       user: {
         id: sanitizedProfile.id,
         email: sanitizedProfile.email,

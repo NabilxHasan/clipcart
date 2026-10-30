@@ -21,6 +21,7 @@ import { StatusBadge } from '../shared/StatusBadge';
 import { useLanguage } from '../../lib/i18n/context';
 import { ClipBDRepository } from '../../lib/db/repository';
 import { ExplainerVideo } from './ExplainerVideo';
+import { FoundingOfferBadge } from '../shared/FoundingOfferBadge';
 
 export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] }) {
   const { t, lang } = useLanguage();
@@ -72,6 +73,9 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
       <section className="relative pt-6 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="relative z-10 max-w-5xl mx-auto text-center space-y-6 sm:space-y-8">
           
+          {/* Founding clipper offer (only while free spots are left) */}
+          <FoundingOfferBadge />
+
           {/* Top Neo-Sticker Pill */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-['JetBrains_Mono'] font-bold bg-white dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 shadow-[3px_3px_0px_#09090b] dark:shadow-[3px_3px_0px_#000000] text-zinc-900 dark:text-zinc-100">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse shrink-0" />
