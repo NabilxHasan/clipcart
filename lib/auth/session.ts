@@ -38,6 +38,8 @@ export function setActiveUser(user: Profile): void {
 export function clearActiveUser(): void {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(ACTIVE_USER_KEY);
+    // The signed session cookie is httpOnly, so only the server can clear it
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     try {
       sessionStorage.clear();
     } catch {
@@ -61,6 +63,7 @@ export function deleteLocalUser(userIdOrTrxId?: string): void {
     }
 
     localStorage.removeItem(ACTIVE_USER_KEY);
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     try {
       sessionStorage.clear();
     } catch {

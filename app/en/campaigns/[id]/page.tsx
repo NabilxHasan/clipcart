@@ -1,13 +1,17 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ClipBDRepository } from '../../../../lib/db/repository';
+import { ServerRepo } from '../../../../lib/db/server-repo';
 import { CampaignDetailClient } from '../../../../components/campaigns/CampaignDetailClient';
 import { JsonLd } from '../../../../components/seo/JsonLd';
 import { getBreadcrumbSchema } from '../../../../lib/seo/schema';
 
+
+// Campaigns and budgets come from Supabase; re-render at most once a minute
+export const revalidate = 60;
+
 export async function generateStaticParams() {
-  const campaigns = await ClipBDRepository.getActiveCampaigns();
+  const campaigns = await ServerRepo.getActiveCampaigns().catch(() => []);
   return campaigns.map((c) => ({ id: c.slug || c.id }));
 }
 
@@ -17,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const campaign = await ClipBDRepository.getCampaignBySlugOrId(id);
+  const campaign = await ServerRepo.getCampaignBySlugOrId(id).catch(() => null);
 
   if (!campaign) {
     return {
@@ -55,7 +59,7 @@ export default async function EnglishCampaignDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const campaign = await ClipBDRepository.getCampaignBySlugOrId(id);
+  const campaign = await ServerRepo.getCampaignBySlugOrId(id).catch(() => null);
 
   if (!campaign) {
     notFound();

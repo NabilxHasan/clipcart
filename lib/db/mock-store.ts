@@ -1,5 +1,7 @@
-// ClipCart - Production Local Store & Hydration Engine
-// Persistent storage engine for campaigns, clippers, submissions, and payments.
+// ClipCart - browser-side profile cache
+// Campaigns, submissions, earnings, wallets and withdrawals live in Supabase (lib/db/server-repo.ts via
+// /api/data/*); this store only caches the signed-in profile for the login/register pages and notifications.
+// defaultLaunchCampaign mirrors the launch campaign row seeded by migration 006.
 
 import {
   Profile,
@@ -191,41 +193,6 @@ class ClipBDStore {
           if (Array.isArray(data.auditLogs)) this.auditLogs = data.auditLogs;
         }
 
-        // Ensure active launch campaign is always present with ৳1,000 budget and its fixed 30-day window
-        const launchStart = new Date(LAUNCH_CAMPAIGN_START_DATE).toISOString();
-        const launchEnd = new Date(LAUNCH_CAMPAIGN_END_DATE).toISOString();
-        if (!this.campaigns || this.campaigns.length === 0) {
-          this.campaigns = [{ ...defaultLaunchCampaign }];
-        } else {
-          for (const c of this.campaigns) {
-            if (
-              c.id === 'cmp-launch-01' ||
-              c.slug === 'clip-cart-launch-campaign' ||
-              c.title.toLowerCase().includes('launch') ||
-              c.clientName.toLowerCase().includes('clipcart') ||
-              this.campaigns.length === 1
-            ) {
-              c.totalBudget = 1000;
-              c.remainingBudget = 1000;
-              c.status = 'ACTIVE';
-              c.startDate = launchStart;
-              c.endDate = launchEnd;
-              c.updatedAt = new Date().toISOString();
-            }
-            // Browsers that saved the launch campaign earlier keep its old links; refresh them
-            if (c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign') {
-              c.sourceUrl = defaultLaunchCampaign.sourceUrl;
-              c.exampleUrl = defaultLaunchCampaign.exampleUrl;
-            }
-          }
-
-          const hasLaunch = this.campaigns.some(
-            c => c.id === 'cmp-launch-01' || c.slug === 'clip-cart-launch-campaign'
-          );
-          if (!hasLaunch) {
-            this.campaigns.unshift({ ...defaultLaunchCampaign });
-          }
-        }
         this.saveToStorage();
       } catch {
         // Corrupted storage; fallback to initial state

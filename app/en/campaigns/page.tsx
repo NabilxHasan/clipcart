@@ -1,9 +1,13 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { ClipBDRepository } from '../../../lib/db/repository';
+import { ServerRepo } from '../../../lib/db/server-repo';
 import { CampaignsClient } from '../../../components/campaigns/CampaignsClient';
 import { JsonLd } from '../../../components/seo/JsonLd';
 import { getBreadcrumbSchema } from '../../../lib/seo/schema';
+
+
+// Campaigns and budgets come from Supabase; re-render at most once a minute
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'Active Content Clipping Campaigns',
@@ -28,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EnglishCampaignsPage() {
-  const campaigns = await ClipBDRepository.getCampaigns('ALL');
+  const campaigns = await ServerRepo.getCampaigns('ALL').catch(() => []);
 
   return (
     <>

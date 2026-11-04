@@ -12,11 +12,9 @@ import {
   Sparkles,
   ShieldCheck,
   Trash2,
-  Lock,
-  RefreshCw
+  Lock
 } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
-import { mockStore } from '../../../lib/db/mock-store';
 import { WhatsAppSettings } from '../../../lib/types/database';
 import { WhatsAppPendingBadge } from '../../../components/shared/WhatsAppPendingBadge';
 
@@ -33,16 +31,14 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  // Security & Data Clean Slate
-  const [wipeConfirm, setWipeConfirm] = useState(false);
-  const [wipeFeedback, setWipeFeedback] = useState<string | null>(null);
+  // Live counts from the database (the old browser-only "clean slate" wipe no longer applies)
+  const [counts, setCounts] = useState<{ campaigns: number; clippers: number; submissions: number } | null>(null);
 
-  const handleClearDemoData = () => {
-    mockStore.clearDemoData();
-    setWipeConfirm(false);
-    setWipeFeedback('All demo/test records have been wiped. Platform is running in 100% clean production mode!');
-    setTimeout(() => setWipeFeedback(null), 5000);
-  };
+  useEffect(() => {
+    ClipBDRepository.getAdminOverviewMetrics()
+      .then(m => setCounts({ campaigns: m.activeCampaignsCount, clippers: m.totalRegisteredClippers, submissions: m.totalSubmissions }))
+      .catch(() => setCounts(null));
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -278,7 +274,7 @@ export default function AdminSettingsPage() {
           <div className="flex items-center gap-2">
             <Trash2 className="w-4 h-4 text-rose-600" />
             <h2 className="text-sm font-['Unbounded'] font-bold text-zinc-950 dark:text-white uppercase">
-              Production Database & Clean Slate
+              Production Database
             </h2>
           </div>
           <span className="neo-sticker bg-amber-100 text-amber-950 border-amber-950 text-[10px]">
@@ -287,63 +283,22 @@ export default function AdminSettingsPage() {
         </div>
 
         <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
-          Ensure your platform runs with zero mock hackathon records. Real campaigns you create and real clippers who register will be stored cleanly in production storage.
+          Campaigns, clip submissions, earnings, wallets and withdrawals are stored in Supabase, so every admin, clipper and visitor sees the same data. Nothing here lives only in this browser.
         </p>
-
-        {wipeFeedback && (
-          <div className="neo-box p-3 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-950 dark:border-emerald-700 text-emerald-950 dark:text-emerald-200 text-xs font-bold font-mono">
-            {wipeFeedback}
-          </div>
-        )}
 
         <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-2 border-zinc-950 dark:border-zinc-700 text-center font-mono">
           <div>
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Live Campaigns</span>
-            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.campaigns.length}</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{counts ? counts.campaigns : '…'}</span>
           </div>
           <div>
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Real Clippers</span>
-            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.profiles.filter(p => p.role === 'CLIPPER').length}</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{counts ? counts.clippers : '…'}</span>
           </div>
           <div>
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold block uppercase">Clip Proofs</span>
-            <span className="font-black text-zinc-950 dark:text-white text-base">{mockStore.submissions.length}</span>
+            <span className="font-black text-zinc-950 dark:text-white text-base">{counts ? counts.submissions : '…'}</span>
           </div>
-        </div>
-
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            Wipes any remaining demo campaigns, fake clippers, or test submissions.
-          </span>
-
-          {!wipeConfirm ? (
-            <button
-              type="button"
-              onClick={() => setWipeConfirm(true)}
-              className="neo-btn bg-zinc-100 dark:bg-zinc-800 hover:bg-rose-100 text-zinc-900 dark:text-white px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-rose-600" />
-              <span>Reset to Clean Production</span>
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleClearDemoData}
-                className="neo-btn bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Confirm Wipe All Demo Data</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setWipeConfirm(false)}
-                className="neo-btn bg-zinc-200 dark:bg-zinc-700 text-zinc-800 dark:text-white px-3 py-2 text-xs font-bold cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

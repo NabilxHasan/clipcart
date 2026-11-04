@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { ClipBDRepository } from '../lib/db/repository';
+import { ServerRepo } from '../lib/db/server-repo';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://clipcart.bd';
@@ -58,7 +58,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Active public campaigns dynamically fetched from database
   try {
-    const campaigns = await ClipBDRepository.getActiveCampaigns();
+    const campaigns = await ServerRepo.getActiveCampaigns().catch(() => []);
     for (const c of campaigns) {
       const slugOrId = c.slug || c.id;
       const bnCampaignUrl = `${baseUrl}/campaigns/${slugOrId}`;

@@ -1,11 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Banknote, ShieldCheck, Sparkles } from 'lucide-react';
-import { mockStore } from '../../../lib/db/mock-store';
+import { ClipBDRepository } from '../../../lib/db/repository';
+import { PaymentRecord } from '../../../lib/types/database';
 
 export default function AdminPaymentsPage() {
-  const payments = mockStore.paymentRecords;
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+
+  useEffect(() => {
+    ClipBDRepository.getPaymentRecords().then(setPayments).catch(() => setPayments([]));
+  }, []);
 
   return (
     <div className="space-y-6">

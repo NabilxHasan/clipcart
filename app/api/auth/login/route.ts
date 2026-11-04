@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { serverAuthStore } from '@/lib/auth/server-store';
 import { checkRateLimit, getClientIp } from '@/lib/auth/rate-limiter';
 import { detectSqlInjection } from '@/lib/security/anti-sqli';
+import { USER_COOKIE, createUserSessionToken, userCookieOptions } from '@/lib/auth/user-session';
 
 export async function POST(req: Request) {
   try {
@@ -92,8 +93,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Return authenticated profile with server-verified role and status
-    return NextResponse.json({
+    // Return authenticated profile with server-verified role and status, plus the signed session cookie the
+    // data API uses to know who is calling (lib/auth/user-session.ts)
+    const res = NextResponse.json({
       success: true,
       user: {
         id: profile.id,
@@ -106,6 +108,9 @@ export async function POST(req: Request) {
       },
       clipperProfile,
     });
+    const token = await createUserSessionToken(profile.id);
+    if (token) res.cookies.set(USER_COOKIE, token, userCookieOptions);
+    return res;
   } catch (err: unknown) {
     return NextResponse.json(
       { success: false, error: err instanceof Error ? err.message : 'Authentication failed' },

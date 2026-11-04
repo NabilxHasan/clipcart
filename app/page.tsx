@@ -1,7 +1,11 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import { ClipBDRepository } from '../lib/db/repository';
+import { ServerRepo } from '../lib/db/server-repo';
 import { HomeClient } from '../components/home/HomeClient';
+
+
+// Campaigns and budgets come from Supabase; re-render at most once a minute
+export const revalidate = 60;
 
 export const metadata: Metadata = {
   title: 'ClipCart — বাংলাদেশি কনটেন্ট ডিস্ট্রিবিউশন প্ল্যাটফর্ম',
@@ -26,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const activeCampaigns = await ClipBDRepository.getActiveCampaigns();
+  const activeCampaigns = await ServerRepo.getActiveCampaigns().catch(() => []);
 
   return <HomeClient activeCampaigns={activeCampaigns} />;
 }

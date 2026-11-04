@@ -7,6 +7,7 @@ import { validateEmail } from '@/lib/validation/email';
 import { detectSqlInjection } from '@/lib/security/anti-sqli';
 import { isFoundingTrxId } from '@/lib/founding';
 import { getFoundingOffer, newFoundingTrxId } from '@/lib/founding-server';
+import { USER_COOKIE, createUserSessionToken, userCookieOptions } from '@/lib/auth/user-session';
 
 export async function POST(req: Request) {
   try {
@@ -156,7 +157,7 @@ export async function POST(req: Request) {
     // 4. Persist user to authoritative server store & Supabase
     await serverAuthStore.registerUser(sanitizedProfile, sanitizedClipperProfile, password);
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       founding,
       user: {
@@ -168,6 +169,10 @@ export async function POST(req: Request) {
         status: sanitizedProfile.status,
       },
     });
+    // Signed session: the data API acts for this clipper only (lib/auth/user-session.ts)
+    const token = await createUserSessionToken(sanitizedProfile.id);
+    if (token) res.cookies.set(USER_COOKIE, token, userCookieOptions);
+    return res;
   } catch (err: unknown) {
     return NextResponse.json(
       { success: false, error: err instanceof Error ? err.message : 'Registration failed' },
