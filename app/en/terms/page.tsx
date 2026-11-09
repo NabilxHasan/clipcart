@@ -82,7 +82,7 @@ export default function TermsEnPage() {
                 <strong>Zero Tolerance for Bot Views:</strong> Purchasing views, deploying automated click scripts, or participating in fake view exchanges is strictly prohibited. Submissions with suspicious metrics will be permanently rejected, and offending clipper accounts terminated without refund.
               </li>
               <li>
-                <strong>Live URLs Only:</strong> Only publicly accessible, non-private TikTok, Instagram Reels, and YouTube Shorts URLs are eligible for audit.
+                <strong>Live URLs Only:</strong> Only publicly accessible, non-private TikTok, Instagram Reels, YouTube Shorts and Facebook Reels URLs are eligible for audit.
               </li>
             </ul>
           </div>
@@ -94,7 +94,7 @@ export default function TermsEnPage() {
               <h2 className="font-['Unbounded'] text-zinc-950 dark:text-white">3. One-Time ৳50 Signup Commitment Fee</h2>
             </div>
             <p className="text-zinc-600 dark:text-zinc-400">
-              To safeguard campaign budgets against automated bot registrations and spam accounts, a one-time ৳50 BDT verification fee via bKash is required during onboarding. ClipCart deducts 0% fee from subsequent clipper earnings—all verified view revenue belongs 100% to the editor.
+              To safeguard campaign budgets against automated bot registrations and spam accounts, a one-time ৳50 BDT verification fee via bKash is required during onboarding. The fee is waived for the first 50 founding clippers while that offer is open. ClipCart deducts 0% from clipper earnings; all verified view revenue belongs to the editor.
             </p>
           </div>
 

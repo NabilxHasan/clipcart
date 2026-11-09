@@ -124,7 +124,7 @@ export default function PrivacyPage() {
               গোপনীয়তা সংক্রান্ত কোনো প্রশ্ন আছে?
             </h3>
             <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              আমাদের ঢাকা অপারেশন্স টিম সবসময় আপনাকে সাহায্য করতে প্রস্তুত।
+              ক্লিপকার্ট সবসময় আপনাকে সাহায্য করতে প্রস্তুত।
             </p>
           </div>
           <Link href="/contact" className="neo-btn neo-btn-primary px-4 py-2 text-xs shrink-0 flex items-center gap-1.5">

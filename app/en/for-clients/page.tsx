@@ -7,7 +7,7 @@ import { getServiceSchema, getBreadcrumbSchema } from '../../../lib/seo/schema';
 export const metadata: Metadata = {
   title: 'Short-Form Video Marketing & Distribution in Bangladesh',
   description:
-    'Guaranteed organic reach across TikTok, Reels, and Shorts for brands, founders, and podcasters. Performance-based CPM pricing starting at ৳1,000 for 3 days.',
+    'Organic reach across TikTok, Reels and Shorts, paid only per verified view, for brands, founders, and podcasters. Performance-based CPM pricing starting at ৳1,000 for 3 days.',
   alternates: {
     canonical: '/en/for-clients',
     languages: {

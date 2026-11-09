@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ClipCart যেভাবে কাজ করে — ৪ ধাপের ডিস্ট্রিবিউশন সিস্টেম',
     description:
-      'লং-ফর্ম ভিডিও থেকে ভাইরাল শর্টস ও নিশ্চিত বিকাশ ক্যাশআউট। জানুন পুরো প্রক্রিয়া।',
+      'লং-ফর্ম ভিডিও থেকে শর্টস ও সরাসরি বিকাশ ক্যাশআউট। জানুন পুরো প্রক্রিয়া।',
     url: '/how-it-works',
     locale: 'bn_BD',
     type: 'website',

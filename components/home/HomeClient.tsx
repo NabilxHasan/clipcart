@@ -423,7 +423,7 @@ export function HomeClient({ activeCampaigns }: { activeCampaigns: Campaign[] })
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                  <span>Strict content rules & 100% brand safety guarantee</span>
+                  <span>Strict content rules for brand safety</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />

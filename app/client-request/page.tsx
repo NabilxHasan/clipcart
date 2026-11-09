@@ -115,7 +115,7 @@ Hi ClipCart Team! I want to launch this campaign. Please confirm review and admi
           Launch a Content Campaign
         </h1>
         <p className="text-sm text-zinc-700 max-w-2xl leading-relaxed font-['Space_Grotesk'] font-medium">
-          In ClipCart, campaigns are published directly by our admin team to ensure 100% brand safety, human-audited view counts, and high-retention editing briefs.
+          In ClipCart, campaigns are published directly by our admin team for brand safety, human-audited view counts, and high-retention editing briefs.
         </p>
 
         {/* Notice Banner */}

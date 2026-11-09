@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ব্র্যান্ড ও পডকাস্টের অর্গানিক রিচ বাড়ান — ClipCart BD',
     description:
-      'TikTok, Reels ও Shorts-এ ব্যাপক ভাইরাল ডিস্ট্রিবিউশন। নিশ্চিত CPM ভিউ ও সাশ্রয়ী প্যাকেজ।',
+      'TikTok, Reels ও Shorts-এ ক্লিপ ডিস্ট্রিবিউশন। শুধু যাচাই করা ভিউয়ের জন্য CPM পেমেন্ট, সাশ্রয়ী প্যাকেজ।',
     url: '/for-clients',
     locale: 'bn_BD',
     type: 'website',

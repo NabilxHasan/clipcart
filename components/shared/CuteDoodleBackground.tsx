@@ -102,7 +102,7 @@ export function CuteDoodleBackground() {
         </svg>
       </div>
 
-      {/* 8. Bottom-Right: Cute "100% VIRAL" Speech Bubble Stamp */}
+      {/* 8. Bottom-Right: Cute "REAL VIEWS" Speech Bubble Stamp */}
       <div className="absolute bottom-14 right-4 sm:right-12 opacity-85 dark:opacity-65 transform -rotate-6 hidden sm:block pointer-events-none select-none">
         <svg width="150" height="80" viewBox="0 0 150 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-zinc-900 dark:text-white">
           {/* Speech bubble */}
@@ -121,7 +121,7 @@ export function CuteDoodleBackground() {
             fill="#e11d48"
             letterSpacing="0.02em"
           >
-            ★ 100% VIRAL!
+            ★ REAL VIEWS!
           </text>
         </svg>
       </div>

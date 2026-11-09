@@ -8,7 +8,7 @@ import { getBreadcrumbSchema } from '../../../lib/seo/schema';
 export const metadata: Metadata = {
   title: 'About ClipCart — Bangladesh Short-Form Video Distribution Marketplace',
   description:
-    'Learn about ClipCart BD, Bangladesh’s premier content clipping and performance distribution house. Connecting brands, podcasters, and vetted video editors with verified view payouts.',
+    'Learn about ClipCart BD, a content clipping marketplace in Bangladesh. Connecting brands, podcasters, and vetted video editors with verified view payouts.',
   alternates: {
     canonical: '/en/about',
     languages: {
@@ -51,7 +51,7 @@ export default function AboutEnPage() {
             Turning Long-Form Content into <span className="text-rose-600">Viral Distribution</span>
           </h1>
           <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed max-w-3xl">
-            ClipCart is Bangladesh’s first performance-driven content distribution house and creator clipping marketplace. We bridge leading podcast hosts, startup founders, and consumer brands with hundreds of vetted video editors across the country to deliver organic, authentic short-form reach.
+            ClipCart is a performance-based clipping marketplace in Bangladesh. We connect podcast hosts, startup founders and brands with video editors across the country, and brands pay only for views we have checked.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export default function AboutEnPage() {
               The ClipCart Engine
             </span>
             <h2 className="text-xl font-['Unbounded'] font-bold text-zinc-950 dark:text-white">
-              Decentralized Clipping with Guaranteed Reach
+              Decentralized Clipping, Paid per Verified View
             </h2>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed">
               Brands submit master footage and a flexible campaign budget (starting from ৳1,000 for 3 days on a CPM model). Our registered community of clippers extracts the highest-retention hooks, applies kinetic typography, and publishes across vertical channels. Brands gain verified viral impressions, and editors earn predictable view-based payouts.
@@ -139,7 +139,7 @@ export default function AboutEnPage() {
           </h2>
           <div className="space-y-3 text-xs sm:text-sm text-zinc-600 dark:text-zinc-300 font-medium leading-relaxed">
             <p>
-              ClipCart is operated by a dedicated team based in Dhaka, Bangladesh. We handle campaign brief preparation, high-speed Google Drive footage hosting, clipper performance tracking, and verified financial disbursements.
+              ClipCart is run from Dhaka, Bangladesh by its founder, Nabil Hasan. We handle campaign brief preparation, high-speed Google Drive footage hosting, clipper performance tracking, and verified financial disbursements.
             </p>
             <p>
               To maintain absolute transparency, all transactions are recorded in an immutable ledger. Every withdrawal is accompanied by an auditable bKash Transaction ID (TrxID).
