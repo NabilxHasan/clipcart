@@ -15,7 +15,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { WhatsAppPendingBadge } from '../../components/shared/WhatsAppPendingBadge';
-import { getActiveUser, clearActiveUser } from '../../lib/auth/session';
+import { getActiveUser, clearActiveUser, refreshActiveUser } from '../../lib/auth/session';
 import { Profile } from '../../lib/types/database';
 import { useLanguage } from '../../lib/i18n/context';
 
@@ -31,6 +31,33 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setCurrentUser(user);
     }
   }, [pathname]);
+
+  // The profile in localStorage dates from sign-up or the last login. Ask the server for the current one on
+  // every dashboard page and whenever the tab comes back into view, so an admin's approval shows up on its own.
+  useEffect(() => {
+    let cancelled = false;
+    const sync = async () => {
+      const result = await refreshActiveUser();
+      if (cancelled) return;
+      if (result === 'LOGIN_REQUIRED') {
+        clearActiveUser();
+        router.replace(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      } else if (result) {
+        setCurrentUser(result);
+      }
+    };
+    sync();
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') sync();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [pathname, router]);
 
   const handleLogout = () => {
     clearActiveUser();

@@ -16,7 +16,7 @@ import { ClipBDRepository } from '../../lib/db/repository';
 import { Submission, Profile } from '../../lib/types/database';
 import { StatusBadge } from '../../components/shared/StatusBadge';
 import { SafeExternalLink } from '../../components/shared/SafeExternalLink';
-import { getActiveUser } from '../../lib/auth/session';
+import { getActiveUser, onActiveUserChange } from '../../lib/auth/session';
 import { useLanguage } from '../../lib/i18n/context';
 
 export default function ClipperOverviewPage() {
@@ -53,6 +53,8 @@ export default function ClipperOverviewPage() {
       setLoading(false);
     }
     load();
+    // The dashboard layout re-checks the account with the server; pick up an approval as soon as it lands
+    return onActiveUserChange(setCurrentUser);
   }, [router]);
 
   if (loading || !financials || !currentUser) {

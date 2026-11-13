@@ -6,7 +6,7 @@ import { ShieldCheck, Plus, CheckCircle2 } from 'lucide-react';
 import { ClipBDRepository } from '../../../lib/db/repository';
 import { WithdrawalRequest, PaymentMethod, Profile } from '../../../lib/types/database';
 import { StatusBadge } from '../../../components/shared/StatusBadge';
-import { getActiveUser } from '../../../lib/auth/session';
+import { getActiveUser, onActiveUserChange } from '../../../lib/auth/session';
 import { useLanguage } from '../../../lib/i18n/context';
 
 export default function ClipperWithdrawalsPage() {
@@ -49,6 +49,8 @@ export default function ClipperWithdrawalsPage() {
       setPaymentIdentifier(user.phoneWhatsapp);
     }
     loadData(user.id);
+    // Without this an account approved after sign-up stayed blocked from cashing out by the stale browser copy
+    return onActiveUserChange(setCurrentUser);
   }, [router]);
 
   const handleWithdrawalRequest = async (e: React.FormEvent) => {
